@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/routes/app_routes.dart';
 
 class SignInScreen extends StatelessWidget {
-  const SignInScreen ({super.key});
+  const SignInScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,10 @@ class SignInScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF4A6CF7)),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF4A6CF7),
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -51,10 +55,7 @@ class SignInScreen extends StatelessWidget {
               // Welcome text
               const Text(
                 'Hi ! Welcome Back',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 30),
@@ -65,7 +66,10 @@ class SignInScreen extends StatelessWidget {
                   hintText: 'Email',
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.grey),
@@ -83,7 +87,10 @@ class SignInScreen extends StatelessWidget {
                   filled: true,
                   fillColor: Colors.white,
                   suffixIcon: const Icon(Icons.visibility_off),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.grey),
@@ -97,9 +104,12 @@ class SignInScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Arahkan ke halaman Home setelah Sign In
+                    Navigator.pushNamed(context, AppRoutes.home);
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A6CF7), // warna biru kayak splash
+                    backgroundColor: const Color(0xFF4A6CF7),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

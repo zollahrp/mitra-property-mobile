@@ -37,7 +37,7 @@ class AppRoutes {
     loginChoice: (context) => const LoginChoiceScreen(),
     signIn: (context) => const SignInScreen(),
     signUp: (context) => const SignUpScreen(),
-    // home: (context) => const HomeScreen(),
+    home: (context) => const HomeScreen(),
     // detailProperty: (context) => const DetailPropertyScreen(),
     // savedEmpty: (context) => const SavedEmptyScreen(),
     // savedFilled: (context) => const SavedFilledScreen(),
