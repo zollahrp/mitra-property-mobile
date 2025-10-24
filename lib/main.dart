@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'routes/app_routes.dart';
-import 'screens/splash/splash_screen.dart';
+import 'package:mitra_property/routes/app_routes.dart'; // pastiin path-nya ini bener
 
 void main() {
   runApp(const MitraPropertyApp());
@@ -12,16 +11,27 @@ class MitraPropertyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mitra Property',
       debugShowCheckedModeBanner: false,
+      title: 'Mitra Property',
       theme: ThemeData(
         primarySwatch: Colors.indigo,
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Poppins',
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+
+      // pastiin rute awalnya salah satu dari yang ada di app_routes.dart
+      initialRoute: AppRoutes.splash, // bisa diganti loginChoice juga
       routes: AppRoutes.routes,
+
+      // tambahin fallback biar gak error kalo route gak ketemu
+      onUnknownRoute: (settings) => MaterialPageRoute(
+        builder: (_) => const Scaffold(
+          body: Center(
+            child: Text('404 — Route not found'),
+          ),
+        ),
+      ),
     );
   }
 }
