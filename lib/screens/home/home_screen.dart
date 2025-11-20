@@ -170,7 +170,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 240,
+                height: MediaQuery.of(context).size.width * 0.65,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
@@ -299,8 +299,10 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildPropertyList() {
   return SizedBox(
-    height: 320,
+    height: 345,
     child: ListView.builder(
+      padding: const EdgeInsets.only(bottom: 7), 
+      // padding: const EdgeInsets.only(bottom: 0),
       scrollDirection: Axis.horizontal,
       itemCount: 3,
       itemBuilder: (context, index) {
