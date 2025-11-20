@@ -14,76 +14,126 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ==== Header ====
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundImage: const AssetImage('assets/images/avatar.png'),
-                    backgroundColor: Colors.grey[200],
+              // ==== HEADER + SEARCH WRAPPER ====
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF4A6CF7), Color(0xFF6C8CFF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Hello, Jenny!',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Monday, 12 April 2025',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(25),
+                    bottomRight: Radius.circular(25),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // ==== Search Bar + Dropdown ====
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8ECFF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: DropdownButton<String>(
-                      value: 'Dijual',
-                      underline: const SizedBox(),
-                      items: const [
-                        DropdownMenuItem(value: 'Dijual', child: Text('Dijual')),
-                        DropdownMenuItem(value: 'Disewa', child: Text('Disewa')),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // == AVATAR + GREETING ==
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: Colors.white,
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/avatar.png',
+                              width: 46,
+                              height: 46,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Hello, Jenny!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Monday, 12 April 2025',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
-                      onChanged: (_) {},
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Cari Property',
-                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                        filled: true,
-                        fillColor: const Color(0xFFE8ECFF),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+
+                    const SizedBox(height: 22),
+
+                    // == DROPDOWN + SEARCH ==
+                    Row(
+                      children: [
+                        // DROPDOWN
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: DropdownButton<String>(
+                            value: 'Dijual',
+                            underline: const SizedBox(),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'Dijual',
+                                child: Text('Dijual'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Disewa',
+                                child: Text('Disewa'),
+                              ),
+                            ],
+                            onChanged: (_) {},
+                          ),
                         ),
-                      ),
+
+                        const SizedBox(width: 10),
+
+                        // SEARCH BAR
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Cari Property',
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Colors.grey,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -91,11 +141,11 @@ class HomeScreen extends StatelessWidget {
               // ==== Banner Promo ====
               Container(
                 width: double.infinity,
-                height: 160,
+                height: 180,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   image: const DecorationImage(
-                    image: AssetImage('assets/images/banner.png'),
+                    image: AssetImage('assets/images/special_property.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -106,10 +156,7 @@ class HomeScreen extends StatelessWidget {
               // ==== Rekomendasi Untukmu ====
               const Text(
                 'Rekomendasi Untukmu',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               _buildPropertyList(),
@@ -119,14 +166,11 @@ class HomeScreen extends StatelessWidget {
               // ==== Video Singkat Property ====
               const Text(
                 'Video Singkat Property',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 220,
+                height: 240,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
@@ -163,10 +207,7 @@ class HomeScreen extends StatelessWidget {
               // ==== Property ====
               const Text(
                 'Property',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               GridView.builder(
@@ -201,7 +242,7 @@ class HomeScreen extends StatelessWidget {
                             topRight: Radius.circular(16),
                           ),
                           child: Image.asset(
-                            'assets/images/property${(index % 2) + 1}.png',
+                            'assets/images/property1.png',
                             height: 120,
                             width: double.infinity,
                             fit: BoxFit.cover,
@@ -257,85 +298,181 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildPropertyList() {
-    return SizedBox(
-      height: 290,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 240,
-            margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.15),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+  return SizedBox(
+    height: 320,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          width: 250,
+          margin: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ==== IMAGE + BOOKMARK ====
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    child: Image.asset(
+                      'assets/images/property1.png',
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  child: Image.asset(
-                    'assets/images/property${index + 1}.png',
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          _buildTag('Rumah'),
-                          const SizedBox(width: 6),
-                          _buildTag('Rumah'),
-                        ],
+
+                  // Bookmark icon
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(50),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Rp. 650 Juta',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4A6CF7),
+                      child: const Icon(
+                        Icons.bookmark_border,
+                        color: Colors.grey,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // ==== CONTENT ====
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // TAGS
+                    Row(
+                      children: [
+                        _buildTag('Rumah'),
+                        const SizedBox(width: 6),
+                        _buildTag('Rumah'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // PRICE
+                    const Text(
+                      'Rp. 650 Juta',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4A6CF7),
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // TITLE
+                    const Text(
+                      'Lorem ipsum dolor sit amet',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // LOCATION
+                    const Text(
+                      'Kota Bogor, Jawa Barat',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // ==== CALL + WHATSAPP BUTTONS ====
+                    Row(
+                      children: [
+                        // CALL BUTTON
+                        Expanded(
+                          child: Container(
+                            height: 42,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFF4A6CF7),
+                                width: 1.3,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.phone,
+                              color: Color(0xFF4A6CF7),
+                              size: 22,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Lorem ipsum dolor sit amet',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Kota Bogor, Jawa Barat',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+
+                        const SizedBox(width: 10),
+
+                        // WHATSAPP BUTTON
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            height: 42,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.green,
+                                width: 1.3,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.chat, color: Colors.green),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Whatsapp',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
 
   Widget _buildTag(String label) {
     return Container(
