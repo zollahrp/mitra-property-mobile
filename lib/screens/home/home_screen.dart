@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import '../../routes/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -175,27 +176,35 @@ class HomeScreen extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
                   itemBuilder: (context, index) {
-                    return Container(
-                      width: 160,
-                      margin: const EdgeInsets.only(right: 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        image: const DecorationImage(
-                          image: AssetImage('assets/images/video_thumb.png'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Stack(
-                        children: const [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.play_circle_fill,
-                              color: Colors.white,
-                              size: 50,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const VideoPlayerScreen(
+                              youtubeUrl:
+                                  "https://youtu.be/dQw4w9WgXcQ",
                             ),
                           ),
-                        ],
+                        );
+                      },
+                      child: Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/video_thumb.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                        ),
                       ),
                     );
                   },
