@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/screens/profile/faq_screen.dart';
+import 'package:mitra_property/screens/profile/show_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -86,6 +87,14 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.person,
                     iconColor: Colors.grey.shade600,
                     title: "My Profile",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ShowProfileScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.language,
