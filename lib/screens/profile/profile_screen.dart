@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/screens/profile/faq_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -66,10 +67,7 @@ class ProfileScreen extends StatelessWidget {
 
                   const Text(
                     "bagasakhfa02@gmail.com",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
               ),
@@ -103,6 +101,12 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.help_outline,
                     iconColor: Colors.teal,
                     title: "Faq",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const FAQScreen()),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -155,43 +159,45 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
     required String title,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade200,
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: 16),
-
-          // Title
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-          ),
-
-          const Spacer(),
-
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.black54),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.grey.shade200,
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: Colors.black54,
+            ),
+          ],
+        ),
       ),
     );
   }
