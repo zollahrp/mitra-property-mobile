@@ -13,68 +13,80 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           children: [
             // =========================
-            // HEADER
+            // HEADER (STYLE SAMA SEPERTI GAMBAR)
             // =========================
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 25, 20, 40),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF4A6CF7), Color(0xFF6C8CFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(35),
-                  bottomRight: Radius.circular(35),
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Back button (optional)
-                  Row(
-                    children: const [
-                      Icon(Icons.arrow_back, color: Colors.white, size: 26),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 25, 20, 80),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF6276E8), // kiri
+                        Color(0xFF788BF3), // tengah
+                        Color.fromARGB(255, 139, 159, 233), // kanan (lebih muda)
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(35),
+                      bottomRight: Radius.circular(35),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 25),
+
+                      Center(
+                        child: Column(
+                          children: const [
+                            Text(
+                              "Jenny Perdana",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "bagasakhfa02@gmail.com",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                ),
 
-                  // Avatar
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white,
-                    child: ClipOval(
-                      child: Image.asset(
-                        "assets/images/avatar.png",
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
+                // Avatar mengambang
+                Positioned(
+                  bottom: -45,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: CircleAvatar(
+                      radius: 55,
+                      backgroundColor: Colors.white,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundImage: AssetImage("assets/images/avatar.png"),
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 14),
-
-                  const Text(
-                    "Jenny Perdana",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  const Text(
-                    "bagasakhfa02@gmail.com",
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 50),
 
             // =========================
             // MENU LIST
