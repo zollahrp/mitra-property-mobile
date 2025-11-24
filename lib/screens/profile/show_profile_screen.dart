@@ -15,16 +15,21 @@ class ShowProfileScreen extends StatelessWidget {
             // TOP HEADER
             // -------------------------------------
             Stack(
+              clipBehavior: Clip.none,
               children: [
-                // Blue gradient header
+                // Background gradient 3 warna
                 Container(
                   height: 210,
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF4A6CF7), Color(0xFF3554D1)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF6276E8), // kiri
+                        Color(0xFF788BF3), // tengah
+                        Color(0xFFA8BBFF), // kanan (lebih muda)
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
                     ),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
@@ -33,11 +38,11 @@ class ShowProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Back button + Avatar
+                // Isi header
                 Positioned.fill(
                   child: Column(
                     children: [
-                      // Back Icon
+                      // Tombol Back
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
@@ -53,19 +58,26 @@ class ShowProfileScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 25),
 
                       // Avatar floating
-                      Material(
-                        elevation: 10,
-                        shape: const CircleBorder(),
-                        child: const CircleAvatar(
-                          radius: 52,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 48,
-                            backgroundImage: AssetImage(
-                              "assets/images/avatar.png",
+                      Positioned(
+                        bottom: -50,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Material(
+                            elevation: 10,
+                            shape: const CircleBorder(),
+                            child: const CircleAvatar(
+                              radius: 52,
+                              backgroundColor: Colors.white,
+                              child: CircleAvatar(
+                                radius: 48,
+                                backgroundImage: AssetImage(
+                                  "assets/images/avatar.png",
+                                ),
+                              ),
                             ),
                           ),
                         ),
