@@ -23,8 +23,10 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
+            _buildDetailInfo(), // ⬅️ TAMBAH INI
           ],
         ),
       ),
@@ -45,10 +47,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
             itemCount: images.length,
             onPageChanged: (i) => setState(() => currentIndex = i),
             itemBuilder: (context, index) {
-              return Image.asset(
-                images[index],
-                fit: BoxFit.cover,
-              );
+              return Image.asset(images[index], fit: BoxFit.cover);
             },
           ),
         ),
@@ -65,10 +64,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
         Positioned(
           top: 16,
           right: 16,
-          child: _circleButton(
-            icon: Icons.bookmark_border,
-            onTap: () {},
-          ),
+          child: _circleButton(icon: Icons.bookmark_border, onTap: () {}),
         ),
 
         // ==== THUMBNAIL BAR ====
@@ -118,6 +114,89 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     );
   }
 
+  Widget _buildDetailInfo() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // TAGS
+        Row(
+          children: [
+            _tagGrey("Rumah"),
+            const SizedBox(width: 10),
+            _tagBlue("Disewa"),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // PRICE
+        const Text(
+          "Rp. 650 Juta",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF4A6CF7),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // TITLE
+        const Text(
+          "Lorem ipsum dolor sit amet\nLorem ipsum dolor sit",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // LOCATION
+        const Text(
+          "Kota Bogor, Jawa Barat",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // TYPE - FURNISH - CERTIFICATE
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _detailItem("Type", "Exclusive"),
+            _detailItem("Furnish", "Semi Furnish"),
+            _detailItem("Certificate", "SHM"),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // LAST UPDATED
+        Row(
+          children: const [
+            Icon(Icons.access_time, size: 18, color: Colors.black87),
+            SizedBox(width: 6),
+            Text(
+              "Diperbarui 13 September 2025 oleh Marketing 1",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
   // Circle button reusable
   Widget _circleButton({required IconData icon, required Function() onTap}) {
     return GestureDetector(
@@ -145,12 +224,68 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
       child: const Center(
         child: Text(
           "10+",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
     );
   }
+}
+
+Widget _tagGrey(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFFEDEDED),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12,
+        color: Color(0xFF7A7A7A),
+      ),
+    ),
+  );
+}
+
+Widget _tagBlue(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A6CF7),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12,
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+}
+
+Widget _detailItem(String title, String value) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          color: Color(0xFF4A6CF7),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        value,
+        style: const TextStyle(
+          fontSize: 13,
+          color: Colors.black,
+        ),
+      ),
+    ],
+  );
 }
