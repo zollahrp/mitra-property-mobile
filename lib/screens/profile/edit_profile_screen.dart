@@ -33,9 +33,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF4A6CF7), Color(0xFF3554D1)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF6276E8), // kiri
+                          Color(0xFF788BF3), // tengah
+                          Color(0xFFAEC8FF), // kanan lebih muda
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(40),
@@ -80,7 +84,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: CircleAvatar(
                                   radius: 48,
                                   backgroundImage: AssetImage(
-                                      "assets/images/avatar.png"),
+                                    "assets/images/avatar.png",
+                                  ),
                                 ),
                               ),
                             ),
@@ -106,7 +111,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
