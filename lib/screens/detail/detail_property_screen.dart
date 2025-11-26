@@ -22,12 +22,45 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            _buildDetailInfo(), // ⬅️ TAMBAH INI
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              _buildDetailInfo(),
+              const SizedBox(height: 30),
+              const Divider(height: 1),
+              const SizedBox(height: 20),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "Informasi Property",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _infoItem("Land area", "200 Hectar"),
+                    _infoItem("Building area", "200 m²"),
+                    _infoItem("Bedrooms", "3"),
+                    _infoItem("Extra rooms", "1"),
+                    _infoItem("Garage", "1"),
+                    _infoItem("Carport", "1"),
+                    _infoItem("Kitchen", "1"),
+                    _infoItem("Electricity", "2000 Watt"),
+                    _infoItem("Direction", "Barat"),
+                    _infoItem("Fee", "10 %"),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -388,6 +421,30 @@ Widget _detailItem(String title, String value) {
       ),
       const SizedBox(height: 4),
       Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+    ],
+  );
+}
+
+Widget _infoItem(String title, String value) {
+  return Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 14),
+      Container(height: 1, color: Colors.grey.withOpacity(0.2)),
+      const SizedBox(height: 14),
     ],
   );
 }
