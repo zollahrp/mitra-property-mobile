@@ -14,14 +14,11 @@ class SignInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Custom AppBar
+              // Back + Title
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF4A6CF7),
-                    ),
+                    icon: const Icon(Icons.arrow_back, color: Color(0xFF4A6CF7)),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -44,15 +41,14 @@ class SignInScreen extends StatelessWidget {
               // Illustration
               Image.asset(
                 'assets/images/signin_illustration.png',
-                width: 260,
+                width: 240,
                 fit: BoxFit.contain,
               ),
 
               const SizedBox(height: 28),
 
-              // Welcome text
               const Text(
-                'Hi! Welcome Back 👋',
+                'Hai, Selamat datang kembali!',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -61,22 +57,22 @@ class SignInScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              // Email Input
-              _buildInputField(
-                hint: 'Email',
+              // Email input
+              _inputField(
+                hint: "Email",
                 icon: Icons.email_outlined,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Password Input
-              _buildInputField(
-                hint: 'Password',
+              // Password input
+              _inputField(
+                hint: "Password",
                 icon: Icons.lock_outline,
                 isPassword: true,
               ),
 
-              // Forgot Password
+              // Forgot password
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -95,7 +91,7 @@ class SignInScreen extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // Sign In Button
+              // Sign In Button (OVAL)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -106,7 +102,7 @@ class SignInScreen extends StatelessWidget {
                     backgroundColor: const Color(0xFF4A6CF7),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: const Text(
@@ -114,6 +110,7 @@ class SignInScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -127,36 +124,32 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  // Reusable Input Component
-  Widget _buildInputField({
+  // Custom InputField (clean like sample UI)
+  Widget _inputField({
     required String hint,
     required IconData icon,
     bool isPassword = false,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1.3,
+        ),
       ),
       child: TextField(
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: Icon(icon, color: Color(0xFF4A6CF7)),
-          suffixIcon: isPassword
-              ? const Icon(Icons.visibility_off, color: Colors.grey)
-              : null,
           border: InputBorder.none,
+          prefixIcon: Icon(icon, color: Colors.grey.shade500),
+          suffixIcon: isPassword
+              ? Icon(Icons.visibility_off, color: Colors.grey.shade400)
+              : null,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 16,
+            vertical: 14,
           ),
         ),
       ),

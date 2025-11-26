@@ -44,13 +44,6 @@ class SignUpScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Column(
@@ -93,27 +86,41 @@ class SignUpScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Full Name
-                    _buildTextField('Full Name', false),
+                    _inputField(
+                      hint: "Full Name",
+                      icon: Icons.person_outline,
+                    ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Email
-                    _buildTextField('Email', false),
+                    _inputField(
+                      hint: "Email",
+                      icon: Icons.email_outlined,
+                    ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Password
-                    _buildTextField('Password', true),
+                    _inputField(
+                      hint: "Password",
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                    ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Confirm Password
-                    _buildTextField('Confirm Password', true),
+                    _inputField(
+                      hint: "Confirm Password",
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                    ),
 
                     const SizedBox(height: 20),
 
                     const Text(
-                      'By Creating an account you agree to our\nTerms of Service and Privacy Policy',
+                      'By creating an account, you agree to our\nTerms of Service and Privacy Policy.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey,
@@ -124,7 +131,7 @@ class SignUpScreen extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    // Sign Up button
+                    // Sign Up button (OVAL biar sama dengan Sign In)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -133,7 +140,7 @@ class SignUpScreen extends StatelessWidget {
                           backgroundColor: const Color(0xFF4A6CF7),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                         child: const Text(
@@ -156,17 +163,33 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String hint, bool isPassword) {
-    return TextField(
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.grey),
+  // MATCHED INPUT FIELD (seperti Sign In)
+  Widget _inputField({
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1.3,
+        ),
+      ),
+      child: TextField(
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          hintText: hint,
+          border: InputBorder.none,
+          prefixIcon: Icon(icon, color: Colors.grey.shade500),
+          suffixIcon: isPassword
+              ? Icon(Icons.visibility_off, color: Colors.grey.shade400)
+              : null,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
