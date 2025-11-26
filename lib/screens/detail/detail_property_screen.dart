@@ -28,6 +28,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
             children: [
               _buildHeader(),
               _buildDetailInfo(),
+
               const SizedBox(height: 30),
               const Divider(height: 1),
               const SizedBox(height: 20),
@@ -59,6 +60,251 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
+                child: Column(
+                  children: [
+                    // Garis atas 1
+                    Divider(thickness: 1, color: Colors.grey.withOpacity(0.3)),
+
+                    // Garis atas 2
+                    Divider(thickness: 1, color: Colors.grey.withOpacity(0.3)),
+
+                    const SizedBox(height: 14),
+
+                    // ==== MARKETING PROFILE ====
+                    Row(
+                      children: [
+                        // Foto
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: AssetImage(
+                                "assets/images/marketing.png",
+                              ), // ganti sesuai asset
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Nama + role
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Marketing A",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Team Marketing Mitra Property",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Garis bawah 1
+                    Divider(thickness: 1, color: Colors.grey.withOpacity(0.3)),
+
+                    // Garis bawah 2
+                    Divider(thickness: 1, color: Colors.grey.withOpacity(0.3)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "Rekomendasi Untukmu",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+
+              SizedBox(height: 12),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: 4,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.6,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const DetailPropertyScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.07),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // IMAGE
+                            ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
+                              child: Image.asset(
+                                'assets/images/property1.png',
+                                height: 120,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+
+                            // CONTENT
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                10,
+                                12,
+                                12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      _buildTagGrey('Jual'),
+                                      SizedBox(width: 6),
+                                      _buildTagBlue('Rumah'),
+                                    ],
+                                  ),
+
+                                  SizedBox(height: 8),
+
+                                  Text(
+                                    'Rp. 650 Juta',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF4A6CF7),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 6),
+
+                                  Text(
+                                    'Lorem ipsum dolor sit amet\nLorem ipsum dolor sit',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.25,
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 6),
+
+                                  Text(
+                                    'Kota Bogor, Jawa Barat',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    // ===== BUTTON CALL =====
+                    Container(
+                      width: 70,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.blue, width: 1.5),
+                      ),
+                      child: Icon(Icons.phone, color: Colors.blue, size: 26),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    // ===== BUTTON WHATSAPP =====
+                    Expanded(
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.green, width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.message, color: Colors.green, size: 24),
+                            SizedBox(width: 10),
+                            Text(
+                              "Whatsapp",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -443,8 +689,44 @@ Widget _infoItem(String title, String value) {
         ],
       ),
       const SizedBox(height: 14),
-      Container(height: 1, color: Colors.grey.withOpacity(0.2)),
+      Container(height: 1, color: Colors.grey),
       const SizedBox(height: 14),
     ],
+  );
+}
+
+Widget _buildTagGrey(String label) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFFEDEDED),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        fontSize: 12,
+        color: Color(0xFF7A7A7A),
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+  );
+}
+
+Widget _buildTagBlue(String label) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A6CF7),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        fontSize: 12,
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
   );
 }
