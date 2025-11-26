@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/screens/auth/forgot_password_screen.dart';
 
 // ===== Screens =====
 import '../screens/splash/splash_screen.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String search = '/search';
   static const String filter = '/filter';
   static const String navbar = '/navbar';
+  static const String forgotPassword = '/forgot-password';
 
   static Map<String, WidgetBuilder> routes = {
     splash: (context) => const SplashScreen(),
@@ -38,6 +40,7 @@ class AppRoutes {
     signIn: (context) => const SignInScreen(),
     signUp: (context) => const SignUpScreen(),
     home: (context) => const BottomNavbar(),
+    forgotPassword: (context) => ForgotPasswordScreen(),
     // detailProperty: (context) => const DetailPropertyScreen(),
     // savedEmpty: (context) => const SavedEmptyScreen(),
     // savedFilled: (context) => const SavedFilledScreen(),

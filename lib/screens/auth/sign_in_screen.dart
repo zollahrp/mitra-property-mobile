@@ -14,7 +14,7 @@ class SignInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // AppBar custom
+              // Custom AppBar
               Row(
                 children: [
                   IconButton(
@@ -22,9 +22,7 @@ class SignInScreen extends StatelessWidget {
                       Icons.arrow_back,
                       color: Color(0xFF4A6CF7),
                     ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
                     child: Center(
@@ -37,75 +35,71 @@ class SignInScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // biar teks benar-benar center
+                  const SizedBox(width: 48),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              // Gambar ilustrasi
+              // Illustration
               Image.asset(
-                'assets/images/signin_illustration.png', // ubah sesuai nama file lu
-                width: 280,
+                'assets/images/signin_illustration.png',
+                width: 260,
                 fit: BoxFit.contain,
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 28),
 
               // Welcome text
               const Text(
-                'Hi ! Welcome Back',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Hi! Welcome Back 👋',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 28),
 
-              // Email Field
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                ),
+              // Email Input
+              _buildInputField(
+                hint: 'Email',
+                icon: Icons.email_outlined,
               ),
 
               const SizedBox(height: 16),
 
-              // Password Field
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: const Icon(Icons.visibility_off),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
+              // Password Input
+              _buildInputField(
+                hint: 'Password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+              ),
+
+              // Forgot Password
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.forgotPassword);
+                  },
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      color: Color(0xFF4A6CF7),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
 
               // Sign In Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Arahkan ke halaman Home setelah Sign In
                     Navigator.pushNamed(context, AppRoutes.home);
                   },
                   style: ElevatedButton.styleFrom(
@@ -117,11 +111,52 @@ class SignInScreen extends StatelessWidget {
                   ),
                   child: const Text(
                     'Sign In',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
+
+              const SizedBox(height: 30),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Reusable Input Component
+  Widget _buildInputField({
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: TextField(
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(icon, color: Color(0xFF4A6CF7)),
+          suffixIcon: isPassword
+              ? const Icon(Icons.visibility_off, color: Colors.grey)
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
           ),
         ),
       ),
