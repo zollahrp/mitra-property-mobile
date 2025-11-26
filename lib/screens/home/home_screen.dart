@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import '../../routes/app_routes.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,54 +20,74 @@ class HomeScreen extends StatelessWidget {
               // ==== HEADER + SEARCH WRAPPER ====
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
+                padding: const EdgeInsets.fromLTRB(16, 32, 16, 30),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFF4A6CF7), Color(0xFF6C8CFF)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(25),
-                    bottomRight: Radius.circular(25),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(26),
+                    bottomRight: Radius.circular(26),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // == AVATAR + GREETING ==
+                    // ========== AVATAR + GREETING ==========
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 26,
-                          backgroundColor: Colors.white,
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/avatar.png',
-                              width: 46,
-                              height: 46,
-                              fit: BoxFit.cover,
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            shape: BoxShape.circle,
+                          ),
+                          child: CircleAvatar(
+                            radius: 26,
+                            backgroundColor: Colors.white,
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/avatar.png',
+                                width: 46,
+                                height: 46,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+
+                        const SizedBox(width: 14),
+
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Hello, Jenny!',
+                          children: [
+                            const Text(
+                              'Hello, Jenny',
                               style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                letterSpacing: 0.3,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 3),
+
                             Text(
-                              'Monday, 12 April 2025',
+                              DateFormat(
+                                'EEEE, d MMMM yyyy',
+                              ).format(DateTime.now()),
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.white70,
+                                color: Colors.white.withOpacity(0.85),
                               ),
                             ),
                           ],
@@ -74,59 +95,91 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 24),
 
-                    // == DROPDOWN + SEARCH ==
+                    // ========== DROPDOWN + SEARCH ==========
                     Row(
                       children: [
-                        // DROPDOWN
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: DropdownButton<String>(
-                            value: 'Dijual',
-                            underline: const SizedBox(),
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'Dijual',
-                                child: Text('Dijual'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Disewa',
-                                child: Text('Disewa'),
-                              ),
-                            ],
-                            onChanged: (_) {},
-                          ),
-                        ),
-
-                        const SizedBox(width: 10),
-
-                        // SEARCH BAR
-                        Expanded(
+                        // DROPDOWN CARD
+                        SizedBox(
+                          height: 48,
                           child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Cari Property',
-                                hintStyle: const TextStyle(color: Colors.grey),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  color: Colors.grey,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
                                 ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                              ],
+                            ),
+                            child: Center(
+                              // ← MAGIC FIX
+                              child: DropdownButton<String>(
+                                value: 'Dijual',
+                                underline: const SizedBox(),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                ),
+                                isExpanded: false,
+                                isDense: true,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Dijual',
+                                    child: Text('Dijual'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Disewa',
+                                    child: Text('Disewa'),
+                                  ),
+                                ],
+                                onChanged: (_) {},
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // SEARCH BAR CARD
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Cari Property...',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.search_rounded,
+                                    color: Colors.grey.shade600,
+                                    size: 22,
+                                  ),
+                                  border: InputBorder.none,
                                 ),
                               ),
                             ),
