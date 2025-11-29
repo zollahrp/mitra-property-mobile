@@ -61,18 +61,15 @@ class SignInScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
+              // Email
               _inputField(
                 hint: "Email / Username",
                 icon: Icons.email_outlined,
                 controller: loginEmailC,
               ),
 
-              _inputField(
-                hint: "Password",
-                icon: Icons.lock_outline,
-                controller: loginPassC,
-                isPassword: true,
-              ),
+              // Password with toggle eye
+              PasswordField(controller: loginPassC),
 
               // Forgot password
               Align(
@@ -91,7 +88,7 @@ class SignInScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 2),
 
               // Sign In Button (OVAL)
               SizedBox(
@@ -140,43 +137,97 @@ class SignInScreen extends StatelessWidget {
       print("STATUS: ${response.statusCode}");
       print("DATA: ${response.data}");
 
-      // Cek jika login sukses
       if (response.statusCode == 200) {
         Navigator.pushNamed(context, AppRoutes.home);
       }
     } catch (e) {
       print("LOGIN ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login gagal, cek kembali username/password")),
+        const SnackBar(content: Text("Login gagal, cek kembali username/password")),
       );
     }
   }
+}
 
-  // Custom InputField (clean like sample UI)
-  Widget _inputField({
-    required String hint,
-    required IconData icon,
-    required TextEditingController controller,
-    bool isPassword = false,
-  }) {
-    return Container(
+// ===========================================================
+//                   INPUT FIELD DEFAULT
+// ===========================================================
+
+Widget _inputField({
+  required String hint,
+  required IconData icon,
+  required TextEditingController controller,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade300, width: 1.3),
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,
           prefixIcon: Icon(icon, color: Colors.grey.shade500),
-          suffixIcon: isPassword
-              ? Icon(Icons.visibility_off, color: Colors.grey.shade400)
-              : null,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 14,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// ===========================================================
+//                   PASSWORD FIELD (TOGGLE)
+// ===========================================================
+
+class PasswordField extends StatefulWidget {
+  final TextEditingController controller;
+
+  const PasswordField({super.key, required this.controller});
+
+  @override
+  State<PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<PasswordField> {
+  bool isHidden = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade300, width: 1.3),
+        ),
+        child: TextField(
+          controller: widget.controller,
+          obscureText: isHidden,
+          decoration: InputDecoration(
+            hintText: "Password",
+            border: InputBorder.none,
+            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade500),
+            suffixIcon: IconButton(
+              icon: Icon(
+                isHidden ? Icons.visibility_off : Icons.visibility,
+                color: Colors.grey.shade500,
+              ),
+              onPressed: () {
+                setState(() {
+                  isHidden = !isHidden;
+                });
+              },
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ),
