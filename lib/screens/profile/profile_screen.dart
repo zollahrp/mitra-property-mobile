@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/screens/auth/sign_in_screen.dart';
 import 'package:mitra_property/screens/profile/faq_screen.dart';
 import 'package:mitra_property/screens/profile/show_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -176,7 +176,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.clear(); // hapus semua data user + token
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SignInScreen()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A6CF7),
                     shape: RoundedRectangleBorder(
