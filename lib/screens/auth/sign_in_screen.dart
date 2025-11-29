@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mitra_property/routes/app_routes.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 final TextEditingController loginEmailC = TextEditingController();
 final TextEditingController loginPassC = TextEditingController();
@@ -144,6 +145,11 @@ class SignInScreen extends StatelessWidget {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", token);
+
+        Map<String, dynamic> decoded = JwtDecoder.decode(token);
+        String userId = decoded["id"];
+
+        await prefs.setString("id", userId);
 
         await prefs.setString("nama", user["nama"] ?? "");
         await prefs.setString("email", user["email"] ?? "");

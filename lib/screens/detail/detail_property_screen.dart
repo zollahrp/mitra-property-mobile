@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/models/property_model.dart';
 
 class DetailPropertyScreen extends StatefulWidget {
-  const DetailPropertyScreen({super.key});
+  final PropertyModel property;
+
+  const DetailPropertyScreen({super.key, required this.property});
 
   @override
   State<DetailPropertyScreen> createState() => _DetailPropertyScreenState();
@@ -157,14 +160,16 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                   ),
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const DetailPropertyScreen(),
-                          ),
-                        );
-                      },
+                      // onTap: () {
+                      //   Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (_) => DetailPropertyScreen(
+                      //         property: properties[index],
+                      //       ),
+                      //     ),
+                      //   );
+                      // },
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,

@@ -35,6 +35,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final dio = Dio();
 
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+      
+      final userIdString = prefs.getString("id");
+      final userId = int.tryParse(userIdString ?? "");
+
+      if (userId == null) {
+        throw "User ID tidak ditemukan";
+      }
+
       final data = {
         "nama": namaC.text,
         "email": emailC.text,
@@ -42,20 +52,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         "alamat": alamatC.text,
       };
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString("token");
-
+      // ========================
+      //   ENDPOINT YANG BENAR
+      // ========================
       final response = await dio.put(
-        "http://api.mitrapropertysentul.com/auth/update",
+        "http://api.mitrapropertysentul.com/users/$userId",
         data: data,
-        options: Options(headers: {"Authorization": "Bearer $token"}),
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
       );
 
       print("UPDATE STATUS: ${response.statusCode}");
       print("UPDATE DATA: ${response.data}");
 
       if (response.statusCode == 200) {
-        final prefs = await SharedPreferences.getInstance();
         await prefs.setString("nama", namaC.text);
         await prefs.setString("email", emailC.text);
         await prefs.setString("username", usernameC.text);

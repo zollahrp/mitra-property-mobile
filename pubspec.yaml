@@ -44,6 +44,8 @@ dependencies:
   dio: ^5.9.0
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
+  jwt_decoder: ^2.0.1
+  http: ^1.6.0
 
 
 dev_dependencies:

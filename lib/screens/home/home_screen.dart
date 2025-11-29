@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/models/property_model.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
+import 'package:mitra_property/service/property_service.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,11 +16,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String username = "";
+  List<PropertyModel> properties = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     loadUsername();
+    loadProperties();
   }
 
   Future<void> loadUsername() async {
@@ -26,6 +31,19 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       username = prefs.getString("username") ?? "";
     });
+  }
+
+  Future<void> loadProperties() async {
+    try {
+      final result = await PropertyService.getApprovedProperties();
+      setState(() {
+        properties = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error: $e");
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -293,115 +311,135 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 4,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.6,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DetailPropertyScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.07),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ==== IMAGE ====
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
-                            ),
-                            child: Image.asset(
-                              'assets/images/property1.png',
-                              height: 120,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
 
-                          // ==== CONTENT ====
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: properties.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.6,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                      itemBuilder: (context, index) {
+                        final p = properties[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    DetailPropertyScreen(property: p),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.07),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // TAGS
-                                Row(
-                                  children: [
-                                    _buildTagGrey('Jual'),
-                                    const SizedBox(width: 6),
-                                    _buildTagBlue('Rumah'),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                // PRICE
-                                const Text(
-                                  'Rp. 650 Juta',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF4A6CF7),
+                                // ==== IMAGE ====
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                  child: Image.network(
+                                    p.foto.isNotEmpty
+                                        ? "https://api.mitraproperty.com/uploads/${p.foto}"
+                                        : "https://via.placeholder.com/300",
+                                    height: 120,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
 
-                                const SizedBox(height: 6),
-
-                                // TITLE 2 lines
-                                const Text(
-                                  'Lorem ipsum dolor sit amet\nLorem ipsum dolor sit',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.25,
+                                // ==== CONTENT ====
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    10,
+                                    12,
+                                    12,
                                   ),
-                                ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // TAGS
+                                      Row(
+                                        children: [
+                                          _buildTagGrey(
+                                            p.listingType == "sell"
+                                                ? "Jual"
+                                                : "Sewa",
+                                          ),
+                                          const SizedBox(width: 6),
+                                          _buildTagBlue(
+                                            p.propertyType ?? "Rumah",
+                                          ),
+                                        ],
+                                      ),
 
-                                const SizedBox(height: 6),
+                                      const SizedBox(height: 8),
 
-                                // LOCATION
-                                const Text(
-                                  'Kota Bogor, Jawa Barat',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                      // PRICE
+                                      Text(
+                                        "Rp ${NumberFormat('#,###', 'id_ID').format(p.harga)}",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF4A6CF7),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      // TITLE (2 lines)
+                                      Text(
+                                        p.lokasi ?? "",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      // LOCATION
+                                      Text(
+                                        p.lokasi ?? "Lokasi tidak tersedia",
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -422,7 +460,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const DetailPropertyScreen()),
+                MaterialPageRoute(
+                  builder: (_) =>
+                      DetailPropertyScreen(property: properties[index]),
+                ),
               );
             },
             child: Container(
@@ -591,25 +632,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  //   Widget _buildTag(String label) {
-  //     return Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  //       decoration: BoxDecoration(
-  //         color: const Color(0xFFE8ECFF),
-  //         borderRadius: BorderRadius.circular(6),
-  //       ),
-  //       child: Text(
-  //         label,
-  //         style: const TextStyle(
-  //           color: Color(0xFF4A6CF7),
-  //           fontSize: 11,
-  //           fontWeight: FontWeight.w500,
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
 
   Widget _buildTagGrey(String label) {
     return Container(
