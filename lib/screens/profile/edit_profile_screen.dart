@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -8,11 +10,70 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final nameController = TextEditingController(text: "Jenny Perdana");
-  final emailController = TextEditingController(text: "Jenny123@gmail.com");
-  final phoneController = TextEditingController(text: "081385997264");
-  final roleController = TextEditingController(text: "User");
-  final dobController = TextEditingController(text: "21 Januari 2025");
+  final namaC = TextEditingController();
+  final emailC = TextEditingController();
+  final usernameC = TextEditingController();
+  final alamatC = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      namaC.text = prefs.getString("nama") ?? "";
+      emailC.text = prefs.getString("email") ?? "";
+      usernameC.text = prefs.getString("username") ?? "";
+      alamatC.text = prefs.getString("alamat") ?? "";
+    });
+  }
+
+  Future<void> updateProfile() async {
+    try {
+      final dio = Dio();
+
+      final data = {
+        "nama": namaC.text,
+        "email": emailC.text,
+        "username": usernameC.text,
+        "alamat": alamatC.text,
+      };
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
+      final response = await dio.put(
+        "http://api.mitrapropertysentul.com/auth/update",
+        data: data,
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      print("UPDATE STATUS: ${response.statusCode}");
+      print("UPDATE DATA: ${response.data}");
+
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("nama", namaC.text);
+        await prefs.setString("email", emailC.text);
+        await prefs.setString("username", usernameC.text);
+        await prefs.setString("alamat", alamatC.text);
+
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profil berhasil diperbarui")),
+        );
+      }
+    } catch (e) {
+      print("UPDATE ERROR: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Gagal update profil")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,11 +204,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // ===========================
               // EDITABLE CARD INPUT
               // ===========================
-              _inputCard("Full Name", nameController),
-              _inputCard("Email", emailController),
-              _inputCard("Phone Number", phoneController),
-              _inputCard("Role", roleController),
-              _inputCard("Date of Birth", dobController),
+              _inputCard("Nama", namaC),
+              _inputCard("Email", emailC),
+              _inputCard("Username", usernameC),
+              _inputCard("Alamat", alamatC),
 
               const SizedBox(height: 30),
 
@@ -161,8 +221,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   height: 55,
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: Save ke DB
-                      Navigator.pop(context);
+                      updateProfile();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4A6CF7),

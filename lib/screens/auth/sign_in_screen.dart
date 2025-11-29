@@ -140,11 +140,15 @@ class SignInScreen extends StatelessWidget {
 
       if (response.statusCode == 200) {
         final user = response.data["data"];
+        final token = user["token"];
 
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("username", user["username"]);
-        await prefs.setString("email", user["email"]);
-        await prefs.setString("nama", user["nama"]);
+        await prefs.setString("token", token);
+
+        await prefs.setString("nama", user["nama"] ?? "");
+        await prefs.setString("email", user["email"] ?? "");
+        await prefs.setString("username", user["username"] ?? "");
+        await prefs.setString("alamat", user["alamat"] ?? "");
 
         Navigator.pushNamed(context, AppRoutes.home);
       }

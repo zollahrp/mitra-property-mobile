@@ -1,8 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mitra_property/screens/profile/edit_profile_screen.dart';
 
-class ShowProfileScreen extends StatelessWidget {
+class ShowProfileScreen extends StatefulWidget {
   const ShowProfileScreen({super.key});
+
+  @override
+  State<ShowProfileScreen> createState() => _ShowProfileScreenState();
+}
+
+class _ShowProfileScreenState extends State<ShowProfileScreen> {
+  String nama = "";
+  String email = "";
+  String username = "";
+  String alamat = "";
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfileData();
+  }
+
+  Future<void> loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      nama = prefs.getString("nama") ?? "-";
+      email = prefs.getString("email") ?? "-";
+      username = prefs.getString("username") ?? "-";
+      alamat = prefs.getString("alamat") ?? "-";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +45,15 @@ class ShowProfileScreen extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                // Background gradient 3 warna
                 Container(
                   height: 210,
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color(0xFF6276E8), // kiri
-                        Color(0xFF788BF3), // tengah
-                        Color(0xFFA8BBFF), // kanan (lebih muda)
+                        Color(0xFF6276E8),
+                        Color(0xFF788BF3),
+                        Color(0xFFA8BBFF),
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
@@ -38,11 +65,9 @@ class ShowProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Isi header
                 Positioned.fill(
                   child: Column(
                     children: [
-                      // Tombol Back
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
@@ -57,10 +82,9 @@ class ShowProfileScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 25),
 
-                      // Avatar floating
+                      // Avatar Floating
                       Positioned(
                         bottom: -50,
                         left: 0,
@@ -96,9 +120,9 @@ class ShowProfileScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "Jenny Perdana",
-                  style: TextStyle(
+                Text(
+                  nama,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1E1E1E),
@@ -142,17 +166,16 @@ class ShowProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             // -------------------------------------
-            // INFO LIST (CARD STYLE)
+            // INFO LIST (Dinamis)
             // -------------------------------------
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: const [
-                  InfoCard(title: "Full Name", value: "Jenny Perdana"),
-                  InfoCard(title: "Email", value: "Jenny123@gmail.com"),
-                  InfoCard(title: "Phone Number", value: "081385997264"),
-                  InfoCard(title: "Role", value: "User"),
-                  InfoCard(title: "Date of Birth", value: "21 Januari 2025"),
+                children: [
+                  InfoCard(title: "Nama", value: nama),
+                  InfoCard(title: "Email", value: email),
+                  InfoCard(title: "Username", value: username),
+                  InfoCard(title: "Alamat", value: alamat),
                 ],
               ),
             ),
@@ -164,7 +187,7 @@ class ShowProfileScreen extends StatelessWidget {
 }
 
 // ===========================================================
-// REUSABLE CARD ITEM (lebih profesional pakai card, bukan garis bawah)
+// REUSABLE CARD ITEM
 // ===========================================================
 class InfoCard extends StatelessWidget {
   final String title;
