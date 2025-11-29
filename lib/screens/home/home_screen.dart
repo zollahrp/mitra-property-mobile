@@ -361,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: Image.network(
                                     p.foto.isNotEmpty
-                                        ? "https://api.mitraproperty.com/uploads/${p.foto}"
+                                        ? "https://api.mitrapropertysentul.com/uploads/${p.foto.first.photoUrl}"
                                         : "https://via.placeholder.com/300",
                                     height: 120,
                                     width: double.infinity,
@@ -407,7 +407,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Color(0xFF4A6CF7),
                                         ),
                                       ),
-
                                       const SizedBox(height: 6),
 
                                       // TITLE (2 lines)

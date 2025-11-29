@@ -6,11 +6,12 @@ import '../models/property_model.dart';
 class PropertyService {
   static const baseUrl = "http://api.mitrapropertysentul.com";
 
-  static Future<List<PropertyModel>> getApprovedProperties() async {
+  /// GET LIST PROPERTY (paginate)
+  static Future<List<PropertyModel>> getApprovedProperties({int page = 1}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token") ?? "";
 
-    final url = Uri.parse("$baseUrl/properties");
+    final url = Uri.parse("$baseUrl/properties?page=$page");
 
     final response = await http.get(
       url,
@@ -20,14 +21,23 @@ class PropertyService {
       },
     );
 
+    // Jika token kosong atau expired
+    if (token.isEmpty) {
+      print("⚠️ Token kosong!");
+      return [];
+    }
+
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
 
-      if (!body.containsKey("data")) return [];
+      // === Struktur benar: { items: [], total, page, perPage, totalPages }
+      if (!body.containsKey("items")) return [];
 
-      List data = body["data"];
-      return data.map((e) => PropertyModel.fromJson(e)).toList();
+      final result = PropertyListResponse.fromJson(body);
+
+      return result.items;
     } else {
+      print("❌ Error: ${response.statusCode} → ${response.body}");
       return [];
     }
   }
