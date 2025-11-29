@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/routes/app_routes.dart';
+import 'package:dio/dio.dart';
+
+final TextEditingController loginEmailC = TextEditingController();
+final TextEditingController loginPassC = TextEditingController();
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key});
@@ -18,7 +22,10 @@ class SignInScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF4A6CF7)),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF4A6CF7),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -49,26 +56,21 @@ class SignInScreen extends StatelessWidget {
 
               const Text(
                 'Hai, Selamat datang kembali!',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 28),
 
-              // Email input
               _inputField(
-                hint: "Email",
+                hint: "Email / Username",
                 icon: Icons.email_outlined,
+                controller: loginEmailC,
               ),
 
-              const SizedBox(height: 14),
-
-              // Password input
               _inputField(
                 hint: "Password",
                 icon: Icons.lock_outline,
+                controller: loginPassC,
                 isPassword: true,
               ),
 
@@ -96,7 +98,7 @@ class SignInScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.home);
+                    loginUser(context);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A6CF7),
@@ -124,21 +126,46 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
+  Future<void> loginUser(BuildContext context) async {
+    try {
+      final dio = Dio();
+
+      final data = {"username": loginEmailC.text, "password": loginPassC.text};
+
+      final response = await dio.post(
+        "http://api.mitrapropertysentul.com/auth/login",
+        data: data,
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("DATA: ${response.data}");
+
+      // Cek jika login sukses
+      if (response.statusCode == 200) {
+        Navigator.pushNamed(context, AppRoutes.home);
+      }
+    } catch (e) {
+      print("LOGIN ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login gagal, cek kembali username/password")),
+      );
+    }
+  }
+
   // Custom InputField (clean like sample UI)
   Widget _inputField({
     required String hint,
     required IconData icon,
+    required TextEditingController controller,
     bool isPassword = false,
   }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 1.3,
-        ),
+        border: Border.all(color: Colors.grey.shade300, width: 1.3),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
