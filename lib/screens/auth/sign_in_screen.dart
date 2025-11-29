@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/routes/app_routes.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final TextEditingController loginEmailC = TextEditingController();
 final TextEditingController loginPassC = TextEditingController();
@@ -138,12 +139,21 @@ class SignInScreen extends StatelessWidget {
       print("DATA: ${response.data}");
 
       if (response.statusCode == 200) {
+        final user = response.data["data"];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("username", user["username"]);
+        await prefs.setString("email", user["email"]);
+        await prefs.setString("nama", user["nama"]);
+
         Navigator.pushNamed(context, AppRoutes.home);
       }
     } catch (e) {
       print("LOGIN ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login gagal, cek kembali username/password")),
+        const SnackBar(
+          content: Text("Login gagal, cek kembali username/password"),
+        ),
       );
     }
   }

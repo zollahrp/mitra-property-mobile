@@ -1,9 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/screens/profile/faq_screen.dart';
 import 'package:mitra_property/screens/profile/show_profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class ProfileScreen extends StatelessWidget {
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String nama = "";
+  String email = "";
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      nama = prefs.getString("nama") ?? "User";
+      email = prefs.getString("email") ?? "user@example.com";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +38,6 @@ class ProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // =========================
-            // HEADER (STYLE SAMA SEPERTI GAMBAR)
-            // =========================
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -24,9 +47,9 @@ class ProfileScreen extends StatelessWidget {
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color(0xFF6276E8), // kiri
-                        Color(0xFF788BF3), // tengah
-                        Color.fromARGB(255, 139, 159, 233), // kanan (lebih muda)
+                        Color(0xFF6276E8),
+                        Color(0xFF788BF3),
+                        Color.fromARGB(255, 139, 159, 233),
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
@@ -40,13 +63,12 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 25),
-
                       Center(
                         child: Column(
-                          children: const [
+                          children: [
                             Text(
-                              "Jenny Perdana",
-                              style: TextStyle(
+                              nama,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
@@ -54,8 +76,8 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 6),
                             Text(
-                              "bagasakhfa02@gmail.com",
-                              style: TextStyle(
+                              email,
+                              style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 13,
                               ),
@@ -67,7 +89,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Avatar mengambang
                 Positioned(
                   bottom: -45,
                   left: 0,
@@ -85,7 +106,6 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 50),
 
             // =========================
@@ -112,7 +132,21 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.language,
                     iconColor: Colors.redAccent,
                     title: "Website",
+                    onTap: () async {
+                      final url = Uri.parse('http://mitrapropertysentul.com');
+
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode
+                              .externalApplication, // biar buka browser
+                        );
+                      } else {
+                        throw 'Could not launch $url';
+                      }
+                    },
                   ),
+
                   _buildMenuItem(
                     icon: Icons.star,
                     iconColor: Colors.orange,
