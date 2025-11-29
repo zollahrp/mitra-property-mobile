@@ -34,7 +34,7 @@ class SignUpScreen extends StatelessWidget {
                   const Expanded(
                     child: Center(
                       child: Text(
-                        'Sign Up',
+                        'Register',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -188,7 +188,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'Sign Up',
+                          'Register',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -241,27 +241,43 @@ class SignUpScreen extends StatelessWidget {
     required TextEditingController controller,
     bool isPassword = false,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300, width: 1.3),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          hintText: hint,
-          border: InputBorder.none,
-          prefixIcon: Icon(icon, color: Colors.grey.shade500),
-          suffixIcon: isPassword
-              ? Icon(Icons.visibility_off, color: Colors.grey.shade400)
-              : null,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+    bool obscure = isPassword;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade300, width: 1.3),
           ),
-        ),
-      ),
+          child: TextField(
+            controller: controller,
+            obscureText: obscure,
+            decoration: InputDecoration(
+              hintText: hint,
+              border: InputBorder.none,
+              prefixIcon: Icon(icon, color: Colors.grey.shade500),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        obscure ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey.shade500,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscure = !obscure;
+                        });
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

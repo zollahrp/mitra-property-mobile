@@ -31,7 +31,7 @@ class SignInScreen extends StatelessWidget {
                   const Expanded(
                     child: Center(
                       child: Text(
-                        'Sign In',
+                        'Login',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -105,7 +105,7 @@ class SignInScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Sign In',
+                    'Login',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
