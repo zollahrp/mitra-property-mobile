@@ -61,6 +61,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String shortenType(String type) {
+    switch (type.toLowerCase()) {
+      case "apartemen":
+      case "apartment":
+        return "Apt";
+      case "rumah":
+        return "Rumah";
+      case "ruko":
+        return "Ruko";
+      case "kost":
+        return "Kost";
+      default:
+        return type; // fallback biar aman
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -341,13 +357,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: properties.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.6,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio:
+                            MediaQuery.of(context).size.width /
+                            (MediaQuery.of(context).size.height * 0.85),
+                      ),
+
                       itemBuilder: (context, index) {
                         final p = properties[index];
 
@@ -430,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 : "Sewa",
                                           ),
                                           _buildTagBlue(
-                                            p.propertyType ?? "Properti",
+                                            shortenType(p.propertyType ?? ""),
                                           ),
                                         ],
                                       ),
