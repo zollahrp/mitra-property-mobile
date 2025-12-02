@@ -124,6 +124,8 @@ class PropertyModel {
           .toList(),
     );
   }
+
+  get photos => null;
 }
 
 /// =============================================

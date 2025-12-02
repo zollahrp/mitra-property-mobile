@@ -398,18 +398,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       // TAGS
                                       Wrap(
-  spacing: 6,
-  runSpacing: 6,
-  children: [
-    _buildTagGrey(
-      (p.listingType ?? "") == "sell" ? "Jual" : "Sewa",
-    ),
-    _buildTagBlue(
-      p.propertyType ?? "Properti",
-    ),
-  ],
-),
-
+                                        spacing: 6,
+                                        runSpacing: 6,
+                                        children: [
+                                          _buildTagGrey(
+                                            (p.listingType ?? "") == "sell"
+                                                ? "Jual"
+                                                : "Sewa",
+                                          ),
+                                          _buildTagBlue(
+                                            p.propertyType ?? "Properti",
+                                          ),
+                                        ],
+                                      ),
 
                                       const SizedBox(height: 8),
 
