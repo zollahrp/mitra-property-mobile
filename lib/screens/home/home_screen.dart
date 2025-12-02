@@ -3,6 +3,7 @@ import 'package:mitra_property/models/property_model.dart';
 import 'package:mitra_property/models/video_model.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
+import 'package:mitra_property/screens/home/filter_modal.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:mitra_property/service/video_service.dart';
 import '../../routes/app_routes.dart';
@@ -28,6 +29,85 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchVideos();
     loadUsername();
     loadProperties();
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // TITLE
+              const Text(
+                "Filter Pencarian",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              // Filter 1
+              const Text("Tipe Listing"),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _filterChip("Dijual"),
+                  const SizedBox(width: 8),
+                  _filterChip("Disewa"),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Filter 2
+              const Text("Jenis Properti"),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  _filterChip("Rumah"),
+                  _filterChip("Apt"),
+                  _filterChip("Ruko"),
+                  _filterChip("Tanah"),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              // APPLY BUTTON
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: const Color(0xFF4A6CF7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    "Terapkan Filter",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> fetchVideos() async {
@@ -170,14 +250,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     // ========== DROPDOWN + SEARCH ==========
                     Row(
                       children: [
-                        // DROPDOWN CARD
-                        SizedBox(
-                          height: 48,
+                        GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.white,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24),
+                                ),
+                              ),
+                              builder: (_) => const FilterModal(),
+                            );
+                          },
                           child: Container(
+                            height: 48, // << SAMAIN DENGAN SEARCH BAR
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                14,
+                              ), // << SAMAIN JUGA
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.08),
@@ -186,32 +280,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            child: Center(
-                              // ← MAGIC FIX
-                              child: DropdownButton<String>(
-                                value: 'Dijual',
-                                underline: const SizedBox(),
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                ),
-                                isExpanded: false,
-                                isDense: true,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'Dijual',
-                                    child: Text('Dijual'),
+                            child: Row(
+                              children: const [
+                                Text(
+                                  "Filter",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xFF4A6CF7),
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  DropdownMenuItem(
-                                    value: 'Disewa',
-                                    child: Text('Disewa'),
-                                  ),
-                                ],
-                                onChanged: (_) {},
-                              ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(Icons.tune, color: Color(0xFF4A6CF7)),
+                              ],
                             ),
                           ),
                         ),
@@ -500,6 +581,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _filterChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(label),
     );
   }
 
