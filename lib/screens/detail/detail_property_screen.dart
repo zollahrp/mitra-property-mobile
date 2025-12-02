@@ -14,12 +14,12 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   int currentIndex = 0;
 
   // List gambar dari assets
-  final List<String> images = [
-    'assets/images/house.png',
-    'assets/images/house.png',
-    'assets/images/house.png',
-  ];
-
+  // final List<String> images = [
+  //   'assets/images/house.png',
+  //   'assets/images/house.png',
+  //   'assets/images/house.png',
+  // ];
+  late final List<PropertyPhoto> photos = widget.property.foto;
   // List<String> get images => widget.property.photos.map((e) => e.photoUrl).toList();
 
   @override
@@ -31,7 +31,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(widget.property),
               _buildDetailInfo(widget.property),
 
               const SizedBox(height: 30),
@@ -322,7 +322,9 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   // ===============================
   // HEADER SECTION
   // ===============================
-  Widget _buildHeader() {
+  Widget _buildHeader(PropertyModel property) {
+    final photos = property.foto; // list PropertyPhoto
+
     return Stack(
       children: [
         // ==== IMAGE CAROUSEL ====
@@ -330,15 +332,20 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           height: 320,
           width: double.infinity,
           child: PageView.builder(
-            itemCount: images.length,
+            itemCount: photos.length,
             onPageChanged: (i) => setState(() => currentIndex = i),
             itemBuilder: (context, index) {
-              return Image.asset(images[index], fit: BoxFit.cover);
+              return Image.network(
+                photos[index].photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Center(child: Icon(Icons.broken_image, size: 50)),
+              );
             },
           ),
         ),
 
-        // ==== BACK + BOOKMARK BUTTON ====
+        // ==== BACK BUTTON ====
         Positioned(
           top: 16,
           left: 16,
@@ -347,6 +354,8 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
             onTap: () => Navigator.pop(context),
           ),
         ),
+
+        // ==== BOOKMARK BTN ====
         Positioned(
           top: 16,
           right: 16,
@@ -363,17 +372,15 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               scrollDirection: Axis.horizontal,
-              itemCount: images.length + 1,
+              itemCount: photos.length + 1,
               itemBuilder: (context, index) {
                 // Last item → "10+"
-                if (index == images.length) {
-                  return _moreThumbnail();
+                if (index == photos.length) {
+                  return _moreThumbnail(photos.length);
                 }
 
                 return GestureDetector(
-                  onTap: () {
-                    setState(() => currentIndex = index);
-                  },
+                  onTap: () => setState(() => currentIndex = index),
                   child: Container(
                     width: 60,
                     margin: const EdgeInsets.only(right: 8),
@@ -386,7 +393,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                         width: 2,
                       ),
                       image: DecorationImage(
-                        image: AssetImage(images[index]),
+                        image: NetworkImage(photos[index].photoUrl),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -397,6 +404,26 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _moreThumbnail(int total) {
+    return Container(
+      width: 60,
+      alignment: Alignment.center,
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        "$total+",
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
     );
   }
 
@@ -602,130 +629,134 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   }
 
   // Thumbnail "10+"
-  Widget _moreThumbnail() {
+  //   Widget _moreThumbnail() {
+  //     return Container(
+  //       width: 60,
+  //       margin: const EdgeInsets.only(right: 8),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white.withOpacity(0.85),
+  //         borderRadius: BorderRadius.circular(10),
+  //       ),
+  //       child: const Center(
+  //         child: Text(
+  //           "10+",
+  //           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  Widget _tagGrey(String text) {
     return Container(
-      width: 60,
-      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFEDEDED),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: const Center(
-        child: Text(
-          "10+",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 12, color: Color(0xFF7A7A7A)),
+      ),
+    );
+  }
+
+  Widget _tagBlue(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4A6CF7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
-}
 
-Widget _tagGrey(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFFEDEDED),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 12, color: Color(0xFF7A7A7A)),
-    ),
-  );
-}
+  Widget _detailItem(String title, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF4A6CF7),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+      ],
+    );
+  }
 
-Widget _tagBlue(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4A6CF7),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-        fontWeight: FontWeight.w600,
+  Widget _infoItem(String title, String value) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Container(height: 1, color: Colors.grey),
+        const SizedBox(height: 14),
+      ],
+    );
+  }
+
+  Widget _buildTagGrey(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDEDED),
+        borderRadius: BorderRadius.circular(12),
       ),
-    ),
-  );
-}
-
-Widget _detailItem(String title, String value) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        title,
+      child: Text(
+        label,
         style: const TextStyle(
-          fontSize: 13,
-          color: Color(0xFF4A6CF7),
+          fontSize: 12,
+          color: Color(0xFF7A7A7A),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagBlue(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4A6CF7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
       ),
-      const SizedBox(height: 4),
-      Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
-    ],
-  );
-}
-
-Widget _infoItem(String title, String value) {
-  return Column(
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 14),
-      Container(height: 1, color: Colors.grey),
-      const SizedBox(height: 14),
-    ],
-  );
-}
-
-Widget _buildTagGrey(String label) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFFEDEDED),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Text(
-      label,
-      style: const TextStyle(
-        fontSize: 12,
-        color: Color(0xFF7A7A7A),
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-  );
-}
-
-Widget _buildTagBlue(String label) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4A6CF7),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Text(
-      label,
-      style: const TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  );
+    );
+  }
 }
