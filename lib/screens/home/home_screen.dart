@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/models/property_model.dart';
+import 'package:mitra_property/models/video_model.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import 'package:mitra_property/service/property_service.dart';
+import 'package:mitra_property/service/video_service.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,13 +19,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String username = "";
   List<PropertyModel> properties = [];
+  List<VideoModel> videos = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    fetchVideos();
     loadUsername();
     loadProperties();
+  }
+
+  Future<void> fetchVideos() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token") ?? "";
+
+      videos = await VideoService.getVideos(token);
+    } catch (e) {
+      print("Error saat fetch video: $e");
+    }
   }
 
   Future<void> loadUsername() async {
@@ -263,44 +278,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
+
               SizedBox(
                 height: MediaQuery.of(context).size.width * 0.65,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VideoPlayerScreen(
-                              youtubeUrl: "https://youtu.be/dQw4w9WgXcQ",
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : videos.isEmpty
+                    ? const Center(child: Text("Tidak ada video"))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: videos.length,
+                        itemBuilder: (context, index) {
+                          final vid = videos[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      VideoPlayerScreen(youtubeUrl: vid.link),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 160,
+                              margin: const EdgeInsets.only(right: 16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                    'assets/images/video_thumb.png',
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.play_circle_fill,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 160,
-                        margin: const EdgeInsets.only(right: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/video_thumb.png'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.play_circle_fill,
-                            color: Colors.white,
-                            size: 50,
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
 
               const SizedBox(height: 30),
