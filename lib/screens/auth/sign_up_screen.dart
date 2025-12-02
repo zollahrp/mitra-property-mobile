@@ -209,7 +209,13 @@ class SignUpScreen extends StatelessWidget {
 
   Future<void> registerUser() async {
     try {
-      final dio = Dio();
+      final dio = Dio(
+        BaseOptions(
+          validateStatus: (status) {
+            return status != null && status <= 500;
+          },
+        ),
+      );
 
       final data = {
         "nama": namaC.text,
@@ -220,17 +226,14 @@ class SignUpScreen extends StatelessWidget {
       };
 
       final response = await dio.post(
-        "http://api.mitrapropertysentul.com/auth/register",
+        "https://api.mitrapropertysentul.com/auth/register",
         data: data,
       );
 
       print("STATUS: ${response.statusCode}");
       print("DATA: ${response.data}");
-
-      // TODO: tampilkan dialog sukses
     } catch (e) {
       print("ERROR: $e");
-      // TODO: tampilkan dialog error
     }
   }
 

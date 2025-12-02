@@ -328,6 +328,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final p = properties[index];
 
+                        // === FIX harga ===
+                        final harga = int.tryParse(p.harga ?? "0") ?? 0;
+                        final hargaFormat =
+                            "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -361,11 +366,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: Image.network(
                                     p.foto.isNotEmpty
-                                        ? "https://api.mitrapropertysentul.com/uploads/${p.foto.first.photoUrl}"
+                                        ? p
+                                              .foto
+                                              .first
+                                              .photoUrl // FIX: URL langsung
                                         : "https://via.placeholder.com/300",
                                     height: 120,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Image.network(
+                                              "https://via.placeholder.com/300",
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
                                   ),
                                 ),
 
@@ -382,25 +397,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       // TAGS
-                                      Row(
-                                        children: [
-                                          _buildTagGrey(
-                                            p.listingType == "sell"
-                                                ? "Jual"
-                                                : "Sewa",
-                                          ),
-                                          const SizedBox(width: 6),
-                                          _buildTagBlue(
-                                            p.propertyType ?? "Rumah",
-                                          ),
-                                        ],
-                                      ),
+                                      Wrap(
+  spacing: 6,
+  runSpacing: 6,
+  children: [
+    _buildTagGrey(
+      (p.listingType ?? "") == "sell" ? "Jual" : "Sewa",
+    ),
+    _buildTagBlue(
+      p.propertyType ?? "Properti",
+    ),
+  ],
+),
+
 
                                       const SizedBox(height: 8),
 
                                       // PRICE
                                       Text(
-                                        "Rp ${NumberFormat('#,###', 'id_ID').format(p.harga)}",
+                                        hargaFormat,
                                         style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
@@ -409,9 +424,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       const SizedBox(height: 6),
 
-                                      // TITLE (2 lines)
+                                      // TITLE (lokasi)
                                       Text(
-                                        p.lokasi ?? "",
+                                        p.lokasi ?? "-",
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(

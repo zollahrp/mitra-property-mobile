@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+/// =============================================
+/// PHOTO MODEL
+/// =============================================
 class PropertyPhoto {
   final String id;
   final String photoUrl;
@@ -15,31 +18,32 @@ class PropertyPhoto {
 
   factory PropertyPhoto.fromJson(Map<String, dynamic> json) {
     return PropertyPhoto(
-      id: json['id'] ?? '',
-      photoUrl: json['photo_url'] ?? '',
-      propertyId: json['propertyId'] ?? '',
-      createdAt: json['created_at'] ?? '',
+      id: json["id"],
+      photoUrl: json["photo_url"],
+      propertyId: json["propertyId"],
+      createdAt: json["created_at"],
     );
   }
 }
 
+/// =============================================
+/// PROPERTY MODEL
+/// =============================================
 class PropertyModel {
   final String id;
   final String nama;
   final String lokasi;
   final String deskripsi;
-  final int harga;
-  final int luasTanah;
-  final int luasBangunan;
-  final int listrik;
-  final int air;
+  final String harga;
+  final String luasTanah;
+  final String luasBangunan;
   final int kamarTidur;
   final int kamarMandi;
   final int dapur;
   final int garasi;
   final int carport;
-  // final String listrik;
-  // final String air;
+  final String listrik;
+  final String air;
   final List<PropertyPhoto> foto;
   final String sertifikat;
   final String furnish;
@@ -75,10 +79,10 @@ class PropertyModel {
     required this.furnish,
     required this.hadap,
     required this.propertyType,
-    this.tipe,
+    required this.tipe,
     required this.listingType,
     required this.status,
-    this.rejectReason,
+    required this.rejectReason,
     required this.userId,
     required this.views,
     required this.clicks,
@@ -88,42 +92,43 @@ class PropertyModel {
 
   factory PropertyModel.fromJson(Map<String, dynamic> json) {
     return PropertyModel(
-      id: json['id'] ?? '',
-      nama: json['nama'] ?? '',
-      lokasi: json['lokasi'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
-      harga: int.tryParse(json['harga'].toString()) ?? 0,
-      luasTanah: int.tryParse(json['luas_tanah'].toString()) ?? 0,
-      luasBangunan: int.tryParse(json['luas_bangunan'].toString()) ?? 0,
-      listrik: int.tryParse(json['listrik'].toString()) ?? 0,
-      air: int.tryParse(json['air'].toString()) ?? 0,
-      kamarTidur: json['kamar_tidur'] ?? 0,
-      kamarMandi: json['kamar_mandi'] ?? 0,
-      dapur: json['dapur'] ?? 0,
-      garasi: json['garasi'] ?? 0,
-      carport: json['carport'] ?? 0,
-      // listrik: json['listrik'] ?? '',
-      // air: json['air'] ?? '',
-      foto: (json['foto'] as List<dynamic>)
-          .map((x) => PropertyPhoto.fromJson(x))
+      id: json["id"],
+      nama: json["nama"],
+      lokasi: json["lokasi"],
+      deskripsi: json["deskripsi"],
+      harga: json["harga"],
+      luasTanah: json["luas_tanah"],
+      luasBangunan: json["luas_bangunan"],
+      kamarTidur: json["kamar_tidur"],
+      kamarMandi: json["kamar_mandi"],
+      dapur: json["dapur"],
+      garasi: json["garasi"],
+      carport: json["carport"],
+      listrik: json["listrik"],
+      air: json["air"],
+      sertifikat: json["sertifikat"],
+      furnish: json["furnish"],
+      hadap: json["hadap"],
+      propertyType: json["property_type"],
+      tipe: json["tipe"],
+      listingType: json["listing_type"],
+      status: json["status"],
+      rejectReason: json["reject_reason"],
+      userId: json["userId"],
+      views: json["views"],
+      clicks: json["clicks"],
+      createdAt: json["created_at"],
+      updatedAt: json["updated_at"],
+      foto: (json["foto"] as List<dynamic>)
+          .map((e) => PropertyPhoto.fromJson(e))
           .toList(),
-      sertifikat: json['sertifikat'] ?? '',
-      furnish: json['furnish'] ?? '',
-      hadap: json['hadap'] ?? '',
-      propertyType: json['property_type'] ?? '',
-      tipe: json['tipe'],
-      listingType: json['listing_type'] ?? '',
-      status: json['status'] ?? '',
-      rejectReason: json['reject_reason'],
-      userId: json['userId'] ?? '',
-      views: json['views'] ?? 0,
-      clicks: json['clicks'] ?? 0,
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
     );
   }
 }
 
+/// =============================================
+/// LIST PAGINATION MODEL
+/// =============================================
 class PropertyListResponse {
   final List<PropertyModel> items;
   final int total;
@@ -141,13 +146,33 @@ class PropertyListResponse {
 
   factory PropertyListResponse.fromJson(Map<String, dynamic> json) {
     return PropertyListResponse(
-      items: (json['items'] as List<dynamic>)
-          .map((x) => PropertyModel.fromJson(x))
+      items: (json["items"] as List<dynamic>)
+          .map((e) => PropertyModel.fromJson(e))
           .toList(),
-      total: json['total'] ?? 0,
-      page: json['page'] ?? 1,
-      perPage: json['perPage'] ?? 10,
-      totalPages: json['totalPages'] ?? 1,
+      total: json["total"],
+      page: json["page"],
+      perPage: json["perPage"],
+      totalPages: json["totalPages"],
+    );
+  }
+}
+
+/// =============================================
+/// CREATE PROPERTY RESPONSE
+/// =============================================
+class CreatePropertyResponse {
+  final String message;
+  final PropertyModel property;
+
+  CreatePropertyResponse({
+    required this.message,
+    required this.property,
+  });
+
+  factory CreatePropertyResponse.fromJson(Map<String, dynamic> json) {
+    return CreatePropertyResponse(
+      message: json["message"],
+      property: PropertyModel.fromJson(json["property"]),
     );
   }
 }

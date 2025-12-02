@@ -132,7 +132,7 @@ class SignInScreen extends StatelessWidget {
       final data = {"username": loginEmailC.text, "password": loginPassC.text};
 
       final response = await dio.post(
-        "http://api.mitrapropertysentul.com/auth/login",
+        "https://api.mitrapropertysentul.com/auth/login",
         data: data,
       );
 
