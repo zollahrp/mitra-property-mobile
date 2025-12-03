@@ -22,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PropertyModel> properties = [];
   List<VideoModel> videos = [];
   bool isLoading = true;
+  Map<String, dynamic> activeFilters = {};
+  List<PropertyModel> allProperties = [];
 
   @override
   void initState() {
@@ -132,13 +134,49 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final result = await PropertyService.getApprovedProperties();
       setState(() {
-        properties = result;
+        allProperties = result; // Data mentah
+        properties = List.from(allProperties); // Data yang akan difilter
         isLoading = false;
       });
     } catch (e) {
       print("Error: $e");
       setState(() => isLoading = false);
     }
+  }
+
+  void applyFilters(Map<String, dynamic> data) {
+    setState(() {
+      activeFilters = data;
+    });
+
+    filterProperties();
+  }
+
+  void filterProperties() {
+    List<PropertyModel> filtered = List.from(allProperties);
+
+    // Filter Tipe Listing: Jual / Sewa
+    if (activeFilters["type"] != null) {
+      filtered = filtered.where((p) {
+        final listing = p.listingType?.toLowerCase() ?? "";
+        return listing.contains(activeFilters["type"].toLowerCase());
+      }).toList();
+    }
+
+    // Filter Jenis Properti
+    if (activeFilters["propertyType"] != null) {
+      filtered = filtered.where((p) {
+        final type = p.propertyType?.toLowerCase() ?? "";
+        return type.contains(activeFilters["propertyType"].toLowerCase());
+      }).toList();
+    }
+
+    // Tambahkan filter lainnya nanti
+    // uploader, sertifikat, luas tanah, sorting, kamar tidur, dsb
+
+    setState(() {
+      properties = filtered;
+    });
   }
 
   String shortenType(String type) {
@@ -251,8 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
+                          onTap: () async {
+                            final result = await showModalBottomSheet(
                               context: context,
                               isScrollControlled: true,
                               backgroundColor: Colors.white,
@@ -263,6 +301,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               builder: (_) => const FilterModal(),
                             );
+
+                            if (result != null) {
+                              if (result["reset"] == true) {
+                                setState(() {
+                                  activeFilters = {}; // kosongkan filter
+                                  properties = List.from(
+                                    allProperties,
+                                  ); // tampilkan semua data
+                                });
+                              } else {
+                                applyFilters(result);
+                              }
+                            }
                           },
                           child: Container(
                             height: 48, // << SAMAIN DENGAN SEARCH BAR

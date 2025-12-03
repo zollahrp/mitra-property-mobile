@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/models/property_model.dart';
 
 class FilterModal extends StatefulWidget {
   const FilterModal({super.key});
@@ -35,9 +36,37 @@ class _FilterModalState extends State<FilterModal> {
     "Luas Bangunan Terluas",
   ];
 
+  final TextEditingController landMinCtrl = TextEditingController();
+  final TextEditingController landMaxCtrl = TextEditingController();
+  final TextEditingController buildMinCtrl = TextEditingController();
+  final TextEditingController buildMaxCtrl = TextEditingController();
+
+  // Tambahan controller luas bangunan & tanah
+  final TextEditingController buildingMinCtrl = TextEditingController();
+  final TextEditingController buildingMaxCtrl = TextEditingController();
+
   final List<String> types = ["Dijual", "Disewa"];
 
   final List<String> approvals = ["Rumah", "Apartemen", "Kavling"];
+
+  void resetAll() {
+    selectedSort = "Harga Terendah";
+    selectedType = "Disewa";
+    selectedApproval = "Kavling";
+
+    selectedUnit = "meter";
+    selectedBedroom = "1 Kamar";
+    selectedCondition = "Furnished";
+    selectedCertificate = "SHM";
+
+    uploaderCtrl.clear();
+    landMinCtrl.clear();
+    landMaxCtrl.clear();
+    buildingMinCtrl.clear();
+    buildingMaxCtrl.clear();
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,9 +254,9 @@ class _FilterModalState extends State<FilterModal> {
 
               Row(
                 children: [
-                  Expanded(child: _inputWithUnit("Minimal")),
+                  Expanded(child: _inputWithUnit("Minimal", landMinCtrl)),
                   const SizedBox(width: 12),
-                  Expanded(child: _inputWithUnit("Maksimal")),
+                  Expanded(child: _inputWithUnit("Maksimal", landMaxCtrl)),
                 ],
               ),
 
@@ -242,9 +271,9 @@ class _FilterModalState extends State<FilterModal> {
 
               Row(
                 children: [
-                  Expanded(child: _inputWithUnit("Minimal")),
+                  Expanded(child: _inputWithUnit("Minimal", buildingMinCtrl)),
                   const SizedBox(width: 12),
-                  Expanded(child: _inputWithUnit("Maksimal")),
+                  Expanded(child: _inputWithUnit("Maksimal", buildingMaxCtrl)),
                 ],
               ),
 
@@ -345,11 +374,22 @@ class _FilterModalState extends State<FilterModal> {
                         ),
                       ),
                       onPressed: () {
-                        setState(() {
-                          selectedSort = "Harga Terendah";
-                          selectedType = "Disewa";
-                          selectedApproval = "Kavling";
-                          uploaderCtrl.clear();
+                        resetAll();
+
+                        Navigator.pop(context, {
+                          "sort": selectedSort,
+                          "type": selectedType,
+                          "approval": selectedApproval,
+                          "uploader": uploaderCtrl.text,
+                          "unit": selectedUnit,
+                          "bedroom": selectedBedroom,
+                          "condition": selectedCondition,
+                          "certificate": selectedCertificate,
+                          "landMin": landMinCtrl.text,
+                          "landMax": landMaxCtrl.text,
+                          "buildingMin": buildingMinCtrl.text,
+                          "buildingMax": buildingMaxCtrl.text,
+                          "reset": true,
                         });
                       },
                       child: const Text(
@@ -381,8 +421,17 @@ class _FilterModalState extends State<FilterModal> {
                           "type": selectedType,
                           "approval": selectedApproval,
                           "uploader": uploaderCtrl.text,
+                          "unit": selectedUnit,
+                          "bedroom": selectedBedroom,
+                          "condition": selectedCondition,
+                          "certificate": selectedCertificate,
+                          "landMin": landMinCtrl.text,
+                          "landMax": landMaxCtrl.text,
+                          "buildingMin": buildingMinCtrl.text,
+                          "buildingMax": buildingMaxCtrl.text,
                         });
                       },
+
                       child: const Text(
                         "Terapkan Filter",
                         style: TextStyle(
@@ -432,7 +481,7 @@ class _FilterModalState extends State<FilterModal> {
     );
   }
 
-  Widget _inputWithUnit(String hint) {
+  Widget _inputWithUnit(String hint, TextEditingController controller) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -444,6 +493,8 @@ class _FilterModalState extends State<FilterModal> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   hintText: hint,
                   border: InputBorder.none,
@@ -461,7 +512,7 @@ class _FilterModalState extends State<FilterModal> {
               ),
             ),
             child: const Text(
-              "m2",
+              "m²",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
