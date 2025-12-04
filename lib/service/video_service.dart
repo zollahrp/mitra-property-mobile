@@ -12,7 +12,7 @@ class VideoService {
     );
 
     if (res.statusCode == 200) {
-      List data = jsonDecode(res.body)['data'];
+      List data = jsonDecode(res.body); // langsung list!
       return data.map((e) => VideoModel.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load videos");

@@ -9,8 +9,8 @@ class VideoModel {
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(
-      id: json['id'].toString(), // <-- penting
-      link: json['link'] ?? '',
+      id: json['id'] ?? "",
+      link: json['link'] ?? "",
     );
   }
 }

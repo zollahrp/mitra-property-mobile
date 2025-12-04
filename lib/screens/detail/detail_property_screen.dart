@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mitra_property/models/property_model.dart';
+import 'package:mitra_property/service/property_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailPropertyScreen extends StatefulWidget {
@@ -22,6 +24,121 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   // ];
   late final List<PropertyPhoto> photos = widget.property.foto;
   // List<String> get images => widget.property.photos.map((e) => e.photoUrl).toList();
+
+  String username = "";
+  List<PropertyModel> properties = [];
+  bool isLoading = true;
+  Map<String, dynamic> activeFilters = {};
+  List<PropertyModel> allProperties = [];
+  bool isLoadingVideos = true;
+  TextEditingController searchCtrl = TextEditingController();
+  //   bool isLoadingVideos = true;
+  // List<VideoModel> videos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadProperties();
+  }
+
+  Future<void> loadProperties() async {
+    try {
+      final result = await PropertyService.getApprovedProperties();
+      setState(() {
+        allProperties = result; // Data mentah
+        properties = List.from(allProperties); // Data yang akan difilter
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  void applyFilters(Map<String, dynamic> data) {
+    setState(() {
+      activeFilters = data;
+    });
+
+    filterProperties();
+  }
+
+  void filterProperties() {
+    List<PropertyModel> filtered = List.from(allProperties);
+
+    // Filter Tipe Listing: Jual / Sewa
+    if (activeFilters["type"] != null) {
+      filtered = filtered.where((p) {
+        final listing = p.listingType?.toLowerCase() ?? "";
+        return listing.contains(activeFilters["type"].toLowerCase());
+      }).toList();
+    }
+
+    // Filter Jenis Properti
+    if (activeFilters["propertyType"] != null) {
+      filtered = filtered.where((p) {
+        final type = p.propertyType?.toLowerCase() ?? "";
+        return type.contains(activeFilters["propertyType"].toLowerCase());
+      }).toList();
+    }
+
+    // Tambahkan filter lainnya nanti
+    // uploader, sertifikat, luas tanah, sorting, kamar tidur, dsb
+
+    setState(() {
+      properties = filtered;
+    });
+  }
+
+  String fixYoutubeUrl(String url) {
+    if (url.startsWith("http")) return url;
+
+    // Jika hanya "youtube.com"
+    if (url.contains("youtube.com")) {
+      return "https://$url";
+    }
+
+    // Kalau cuma ID video misal "dQw4w9WgXcQ"
+    if (!url.contains("/")) {
+      return "https://www.youtube.com/watch?v=$url";
+    }
+
+    return url;
+  }
+
+  void searchProperties(String query) {
+    query = query.toLowerCase();
+
+    setState(() {
+      properties = allProperties.where((p) {
+        final lokasi = (p.lokasi ?? "").toLowerCase();
+        final tipe = (p.propertyType ?? "").toLowerCase();
+        final jualsewa = (p.listingType ?? "").toLowerCase();
+        final harga = (p.harga ?? "").toLowerCase();
+
+        return lokasi.contains(query) ||
+            tipe.contains(query) ||
+            jualsewa.contains(query) ||
+            harga.contains(query);
+      }).toList();
+    });
+  }
+
+  String shortenType(String type) {
+    switch (type.toLowerCase()) {
+      case "apartemen":
+      case "apartment":
+        return "Apt";
+      case "rumah":
+        return "Rumah";
+      case "ruko":
+        return "Ruko";
+      case "kost":
+        return "Kost";
+      default:
+        return type; // fallback biar aman
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,119 +273,141 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: 4,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.6,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      // onTap: () {
-                      //   Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //       builder: (_) => DetailPropertyScreen(
-                      //         property: properties[index],
-                      //       ),
-                      //     ),
-                      //   );
-                      // },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.07),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: properties.length, // DINAMIS
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.6,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // IMAGE
-                            ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                topRight: Radius.circular(16),
-                              ),
-                              child: Image.asset(
-                                'assets/images/property1.png',
-                                height: 120,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                        itemBuilder: (context, index) {
+                          final p = properties[index];
 
-                            // CONTENT
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                12,
-                                10,
-                                12,
-                                12,
+                          // === FIX harga ===
+                          final harga = int.tryParse(p.harga ?? "0") ?? 0;
+                          final hargaFormat =
+                              "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      DetailPropertyScreen(property: p),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.07),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      _buildTagGrey('Jual'),
-                                      SizedBox(width: 6),
-                                      _buildTagBlue('Rumah'),
-                                    ],
-                                  ),
-
-                                  SizedBox(height: 8),
-
-                                  Text(
-                                    'Rp. 650 Juta',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4A6CF7),
+                                  // ==== IMAGE ====
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
+                                    ),
+                                    child: Image.network(
+                                      p.foto.isNotEmpty
+                                          ? p.foto.first.photoUrl
+                                          : "https://via.placeholder.com/300",
+                                      height: 120,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
 
-                                  SizedBox(height: 6),
-
-                                  Text(
-                                    'Lorem ipsum dolor sit amet\nLorem ipsum dolor sit',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      height: 1.25,
+                                  // ==== CONTENT ====
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      10,
+                                      12,
+                                      12,
                                     ),
-                                  ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // TAGS
+                                        Row(
+                                          children: [
+                                            _buildTagGrey(
+                                              (p.listingType ?? "") == "sell"
+                                                  ? "Jual"
+                                                  : "Sewa",
+                                            ),
+                                            const SizedBox(width: 6),
+                                            _buildTagBlue(
+                                              shortenType(p.propertyType ?? ""),
+                                            ),
+                                          ],
+                                        ),
 
-                                  SizedBox(height: 6),
+                                        const SizedBox(height: 8),
 
-                                  Text(
-                                    'Kota Bogor, Jawa Barat',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
+                                        // PRICE
+                                        Text(
+                                          hargaFormat,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF4A6CF7),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        // TITLE / NAMA PROPERTY
+                                        Text(
+                                          p.lokasi ?? "-",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        // LOCATION
+                                        Text(
+                                          p.lokasi ?? "Lokasi tidak tersedia",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
+
               const SizedBox(height: 30),
 
               Padding(

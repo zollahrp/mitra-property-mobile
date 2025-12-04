@@ -7,6 +7,7 @@ import 'package:mitra_property/screens/home/filter_modal.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:mitra_property/service/video_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +30,42 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchCtrl = TextEditingController();
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
+
+  String getYoutubeId(String url) {
+    try {
+      // Hilangkan whitespace, dll
+      url = url.trim();
+
+      // Coba langsung extract via package bawaan
+      final id = YoutubePlayer.convertUrlToId(url);
+      if (id != null) return id;
+
+      // Fallback manual
+      Uri? uri = Uri.tryParse(url);
+      if (uri == null) return "";
+
+      // https://www.youtube.com/watch?v=abc123
+      if (uri.queryParameters.containsKey("v")) {
+        return uri.queryParameters["v"] ?? "";
+      }
+
+      // https://youtu.be/abc123?si=xxxxx
+      if (uri.host.contains("youtu.be")) {
+        final path = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : "";
+        // Buang query (?si=xxx)
+        return path.split("?").first;
+      }
+    } catch (e) {
+      return "";
+    }
+
+    return "";
+  }
+
+  String getYoutubeThumbnail(String url) {
+    final id = getYoutubeId(url);
+    return "https://img.youtube.com/vi/$id/hqdefault.jpg";
+  }
 
   @override
   void initState() {
@@ -190,6 +227,22 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       properties = filtered;
     });
+  }
+
+  String fixYoutubeUrl(String url) {
+    if (url.startsWith("http")) return url;
+
+    // Jika hanya "youtube.com"
+    if (url.contains("youtube.com")) {
+      return "https://$url";
+    }
+
+    // Kalau cuma ID video misal "dQw4w9WgXcQ"
+    if (!url.contains("/")) {
+      return "https://www.youtube.com/watch?v=$url";
+    }
+
+    return url;
   }
 
   void searchProperties(String query) {
@@ -482,11 +535,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           return GestureDetector(
                             onTap: () {
+                              final fixedUrl = fixYoutubeUrl(vid.link);
+
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      VideoPlayerScreen(youtubeUrl: vid.link),
+                                      VideoPlayerScreen(youtubeUrl: fixedUrl),
                                 ),
                               );
                             },
@@ -495,9 +550,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               margin: const EdgeInsets.only(right: 16),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                image: const DecorationImage(
-                                  image: AssetImage(
-                                    'assets/images/video_thumb.jpg',
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    getYoutubeThumbnail(vid.link),
                                   ),
                                   fit: BoxFit.cover,
                                 ),
