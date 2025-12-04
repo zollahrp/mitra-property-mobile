@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/models/property_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DetailPropertyScreen extends StatefulWidget {
   final PropertyModel property;
@@ -289,26 +290,43 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
 
                     // ===== BUTTON WHATSAPP =====
                     Expanded(
-                      child: Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.green, width: 1.5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.message, color: Colors.green, size: 24),
-                            SizedBox(width: 10),
-                            Text(
-                              "Whatsapp",
-                              style: TextStyle(
-                                fontSize: 16,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final phone = "62811879603";
+                          final url = Uri.parse("https://wa.me/$phone");
+
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.green, width: 1.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.message,
                                 color: Colors.green,
-                                fontWeight: FontWeight.w600,
+                                size: 24,
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 10),
+                              Text(
+                                "Whatsapp",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

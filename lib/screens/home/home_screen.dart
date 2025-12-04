@@ -6,6 +6,7 @@ import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import 'package:mitra_property/screens/home/filter_modal.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:mitra_property/service/video_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -861,29 +862,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                   // WHATSAPP BUTTON
                                   Expanded(
                                     flex: 2,
-                                    child: Container(
-                                      height: 42,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: Colors.green,
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: const [
-                                          Icon(Icons.chat, color: Colors.green),
-                                          SizedBox(width: 6),
-                                          Text(
-                                            'Whatsapp',
-                                            style: TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        final phone = "62811879603";
+                                        final url = Uri.parse(
+                                          "https://wa.me/$phone",
+                                        );
+
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(
+                                            url,
+                                            mode:
+                                                LaunchMode.externalApplication,
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
                                           ),
-                                        ],
+                                          border: Border.all(
+                                            color: Colors.green,
+                                            width: 1.3,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(
+                                              Icons.chat,
+                                              color: Colors.green,
+                                            ),
+                                            SizedBox(width: 6),
+                                            Text(
+                                              'Whatsapp',
+                                              style: TextStyle(
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
