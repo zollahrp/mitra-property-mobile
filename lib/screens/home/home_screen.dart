@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PropertyModel> allProperties = [];
   bool isLoadingVideos = true;
   TextEditingController searchCtrl = TextEditingController();
+  Set<String> savedIds = {};
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
 
@@ -73,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchVideos();
     loadUsername();
     loadProperties();
+    loadSaved();
   }
 
   void _openFilterSheet(BuildContext context) {
@@ -171,6 +173,32 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoadingVideos = false;
       });
     }
+  }
+
+  Future<void> toggleSaved(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> saved = prefs.getStringList("saved_properties") ?? [];
+
+    if (saved.contains(id)) {
+      saved.remove(id);
+    } else {
+      saved.add(id);
+    }
+
+    await prefs.setStringList("saved_properties", saved);
+
+    setState(() {
+      savedIds = saved.toSet(); // update UI
+    });
+  }
+
+  Future<void> loadSaved() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> saved = prefs.getStringList("saved_properties") ?? [];
+
+    setState(() {
+      savedIds = saved.toSet();
+    });
   }
 
   Future<void> loadUsername() async {
@@ -627,30 +655,69 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // ==== IMAGE ====
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(16),
-                                    topRight: Radius.circular(16),
-                                  ),
-                                  child: Image.network(
-                                    p.foto.isNotEmpty
-                                        ? p
-                                              .foto
-                                              .first
-                                              .photoUrl // FIX: URL langsung
-                                        : "https://via.placeholder.com/300",
-                                    height: 120,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Image.network(
+                                // ==== IMAGE + BOOKMARK ====
+                                Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
+                                      ),
+                                      child: Image.network(
+                                        p.foto.isNotEmpty
+                                            ? p.foto.first.photoUrl
+                                            : "https://via.placeholder.com/300",
+                                        height: 120,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) => Image.network(
                                               "https://via.placeholder.com/300",
                                               height: 120,
                                               fit: BoxFit.cover,
                                             ),
-                                  ),
+                                      ),
+                                    ),
+
+                                    // === BOOKMARK ICON ===
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (savedIds.contains(p.id)) {
+                                              savedIds.remove(p.id);
+                                            } else {
+                                              savedIds.add(p.id);
+                                            }
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              50,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            savedIds.contains(p.id)
+                                                ? Icons.bookmark
+                                                : Icons.bookmark_border,
+                                            color: savedIds.contains(p.id)
+                                                ? Colors.blue
+                                                : Colors.grey,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
 
                                 // ==== CONTENT ====

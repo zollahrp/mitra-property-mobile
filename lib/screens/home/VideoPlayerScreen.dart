@@ -10,16 +10,22 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late YoutubePlayerController _controller;
+  YoutubePlayerController? _controller;
+  String? videoId;
 
   @override
   void initState() {
     super.initState();
 
-    final videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl);
+    videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl);
+
+    if (videoId == null || videoId!.isEmpty) {
+      print("❌ VIDEO ID NOT VALID FROM URL: ${widget.youtubeUrl}");
+      return;
+    }
 
     _controller = YoutubePlayerController(
-      initialVideoId: videoId ?? "",
+      initialVideoId: videoId!,
       flags: const YoutubePlayerFlags(
         autoPlay: true,
         mute: false,
@@ -28,11 +34,29 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (videoId == null || videoId!.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Video Player")),
+        body: const Center(
+          child: Text(
+            "Video tidak dapat diputar.\nURL YouTube tidak valid.",
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("Video Player")),
       body: YoutubePlayer(
-        controller: _controller,
+        controller: _controller!,
         showVideoProgressIndicator: true,
       ),
     );

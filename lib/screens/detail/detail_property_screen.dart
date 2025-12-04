@@ -63,6 +63,16 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     filterProperties();
   }
 
+  void openWhatsApp(String message) async {
+    final url = Uri.parse(
+      "https://wa.me/62811879603?text=${Uri.encodeComponent(message)}",
+    );
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception("Tidak bisa membuka WhatsApp");
+    }
+  }
+
   void filterProperties() {
     List<PropertyModel> filtered = List.from(allProperties);
 
@@ -670,63 +680,100 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           Row(
             children: [
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFE3B8),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(
-                        Icons.receipt_long_outlined,
-                        size: 26,
-                        color: Colors.black87,
-                      ),
-                      SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          "Ajukan\nPerhitungan Pajak",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                child: GestureDetector(
+                  onTap: () {
+                    final msg =
+                        """
+Halo, saya ingin mengajukan perhitungan pajak untuk properti berikut:
+
+🏡 Nama: ${widget.property.nama}
+📍 Lokasi: ${widget.property.lokasi}
+💰 Harga: Rp ${widget.property.harga}
+📄 ID Properti: ${widget.property.id}
+
+Mohon bantuannya ya.
+""";
+                    openWhatsApp(msg);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFE3B8),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 26,
+                          color: Colors.black87,
+                        ),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            "Ajukan\nPerhitungan Pajak",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4A6CF7),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.home_outlined, size: 26, color: Colors.white),
-                      SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          "Ajukan\nPerhitungan KPR",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                child: GestureDetector(
+                  onTap: () {
+                    final msg =
+                        """
+Halo, saya ingin mengajukan perhitungan KPR untuk properti berikut:
+
+🏡 Nama: ${widget.property.nama}
+📍 Lokasi: ${widget.property.lokasi}
+💰 Harga: Rp ${widget.property.harga}
+📄 ID Properti: ${widget.property.id}
+
+Mohon informasi lebih lanjut terkait simulasi cicilan.
+""";
+                    openWhatsApp(msg);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4A6CF7),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.home_outlined,
+                          size: 26,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            "Ajukan\nPerhitungan KPR",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  youtube_player_iframe: ^4.0.4
+  youtube_player_iframe: ^5.2.2
   # webview_flutter: ^4.2.4
   youtube_player_flutter: ^9.1.3
 
