@@ -380,15 +380,25 @@ class _FilterModalState extends State<FilterModal> {
                           "sort": selectedSort,
                           "type": selectedType,
                           "approval": selectedApproval,
-                          "uploader": uploaderCtrl.text,
+                          "uploader": uploaderCtrl.text.isEmpty
+                              ? null
+                              : uploaderCtrl.text,
                           "unit": selectedUnit,
                           "bedroom": selectedBedroom,
                           "condition": selectedCondition,
                           "certificate": selectedCertificate,
-                          "landMin": landMinCtrl.text,
-                          "landMax": landMaxCtrl.text,
-                          "buildingMin": buildingMinCtrl.text,
-                          "buildingMax": buildingMaxCtrl.text,
+                          "landMin": landMinCtrl.text.isEmpty
+                              ? null
+                              : landMinCtrl.text,
+                          "landMax": landMaxCtrl.text.isEmpty
+                              ? null
+                              : landMaxCtrl.text,
+                          "buildingMin": buildingMinCtrl.text.isEmpty
+                              ? null
+                              : buildingMinCtrl.text,
+                          "buildingMax": buildingMaxCtrl.text.isEmpty
+                              ? null
+                              : buildingMaxCtrl.text,
                           "reset": true,
                         });
                       },

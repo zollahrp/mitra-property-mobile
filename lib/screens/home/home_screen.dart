@@ -24,6 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   Map<String, dynamic> activeFilters = {};
   List<PropertyModel> allProperties = [];
+  bool isLoadingVideos = true;
+  TextEditingController searchCtrl = TextEditingController();
+  //   bool isLoadingVideos = true;
+  // List<VideoModel> videos = [];
 
   @override
   void initState() {
@@ -117,9 +121,17 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token") ?? "";
 
-      videos = await VideoService.getVideos(token);
+      final result = await VideoService.getVideos(token);
+
+      setState(() {
+        videos = result;
+        isLoadingVideos = false;
+      });
     } catch (e) {
       print("Error saat fetch video: $e");
+      setState(() {
+        isLoadingVideos = false;
+      });
     }
   }
 
@@ -176,6 +188,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       properties = filtered;
+    });
+  }
+
+  void searchProperties(String query) {
+    query = query.toLowerCase();
+
+    setState(() {
+      properties = allProperties.where((p) {
+        final lokasi = (p.lokasi ?? "").toLowerCase();
+        final tipe = (p.propertyType ?? "").toLowerCase();
+        final jualsewa = (p.listingType ?? "").toLowerCase();
+        final harga = (p.harga ?? "").toLowerCase();
+
+        return lokasi.contains(query) ||
+            tipe.contains(query) ||
+            jualsewa.contains(query) ||
+            harga.contains(query);
+      }).toList();
     });
   }
 
@@ -370,6 +400,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                               child: TextField(
+                                controller: searchCtrl,
+                                onChanged: (value) {
+                                  if (value.isEmpty) {
+                                    setState(() {
+                                      properties = List.from(allProperties);
+                                    });
+                                  } else {
+                                    searchProperties(value);
+                                  }
+                                },
                                 decoration: InputDecoration(
                                   hintText: 'Cari Property...',
                                   hintStyle: TextStyle(
@@ -429,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               SizedBox(
                 height: MediaQuery.of(context).size.width * 0.65,
-                child: isLoading
+                child: isLoadingVideos
                     ? const Center(child: CircularProgressIndicator())
                     : videos.isEmpty
                     ? const Center(child: Text("Tidak ada video"))
@@ -456,7 +496,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 image: const DecorationImage(
                                   image: AssetImage(
-                                    'assets/images/video_thumb.png',
+                                    'assets/images/video_thumb.jpg',
                                   ),
                                   fit: BoxFit.cover,
                                 ),
@@ -649,186 +689,215 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPropertyList() {
     return SizedBox(
       height: 365,
-      child: ListView.builder(
-        padding: const EdgeInsets.only(bottom: 7),
-        // padding: const EdgeInsets.only(bottom: 0),
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      DetailPropertyScreen(property: properties[index]),
-                ),
-              );
-            },
-            child: Container(
-              width: 250,
-              margin: const EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ==== IMAGE + BOOKMARK ====
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                        child: Image.asset(
-                          'assets/images/property1.png',
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : properties.isEmpty
+          ? const Center(child: Text("Tidak ada property"))
+          : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 7),
+              scrollDirection: Axis.horizontal,
+              itemCount: properties.length,
+              itemBuilder: (context, index) {
+                final p = properties[index];
 
-                      // Bookmark icon
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Icon(
-                            Icons.bookmark_border,
-                            color: Colors.grey,
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                // Convert harga → int → formatted
+                final harga = int.tryParse(p.harga ?? "0") ?? 0;
+                final hargaFormat =
+                    "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
 
-                  // ==== CONTENT ====
-                  Padding(
-                    padding: const EdgeInsets.all(14),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DetailPropertyScreen(property: p),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 250,
+                    margin: const EdgeInsets.only(right: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // TAGS
-                        Row(
+                        // ==== IMAGE + BOOKMARK ====
+                        Stack(
                           children: [
-                            _buildTagGrey('Jual'),
-                            const SizedBox(width: 6),
-                            _buildTagBlue('Rumah'),
-                          ],
-                        ),
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              ),
+                              child: Image.network(
+                                p.foto.isNotEmpty
+                                    ? p.foto.first.photoUrl
+                                    : "https://via.placeholder.com/300",
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Image.network(
+                                      "https://via.placeholder.com/300",
+                                      height: 150,
+                                      fit: BoxFit.cover,
+                                    ),
+                              ),
+                            ),
 
-                        const SizedBox(height: 10),
-
-                        // PRICE
-                        const Text(
-                          'Rp. 650 Juta',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF4A6CF7),
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        // TITLE
-                        const Text(
-                          'Lorem ipsum dolor sit amet',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        // LOCATION
-                        const Text(
-                          'Kota Bogor, Jawa Barat',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // ==== CALL + WHATSAPP BUTTONS ====
-                        Row(
-                          children: [
-                            // CALL BUTTON
-                            Expanded(
+                            // Bookmark icon
+                            Positioned(
+                              top: 12,
+                              right: 12,
                               child: Container(
-                                height: 42,
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: const Color(0xFF4A6CF7),
-                                    width: 1.3,
-                                  ),
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(50),
                                 ),
                                 child: const Icon(
-                                  Icons.phone,
-                                  color: Color(0xFF4A6CF7),
+                                  Icons.bookmark_border,
+                                  color: Colors.grey,
                                   size: 22,
                                 ),
                               ),
                             ),
+                          ],
+                        ),
 
-                            const SizedBox(width: 10),
-
-                            // WHATSAPP BUTTON
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Colors.green,
-                                    width: 1.3,
+                        // ==== CONTENT ====
+                        Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // TAGS
+                              Row(
+                                children: [
+                                  _buildTagGrey(
+                                    (p.listingType ?? "") == "sell"
+                                        ? "Jual"
+                                        : "Sewa",
                                   ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.chat, color: Colors.green),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Whatsapp',
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                                  const SizedBox(width: 6),
+                                  _buildTagBlue(
+                                    shortenType(p.propertyType ?? ""),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              // PRICE (dinamis)
+                              Text(
+                                hargaFormat,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF4A6CF7),
                                 ),
                               ),
-                            ),
-                          ],
+
+                              const SizedBox(height: 4),
+
+                              // TITLE (lokasi / nama)
+                              Text(
+                                p.lokasi ?? "-",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              // LOCATION
+                              Text(
+                                p.lokasi ?? "Lokasi tidak tersedia",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              // ==== CALL + WHATSAPP BUTTONS ====
+                              Row(
+                                children: [
+                                  // CALL BUTTON
+                                  Expanded(
+                                    child: Container(
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: const Color(0xFF4A6CF7),
+                                          width: 1.3,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.phone,
+                                        color: Color(0xFF4A6CF7),
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 10),
+
+                                  // WHATSAPP BUTTON
+                                  Expanded(
+                                    flex: 2,
+                                    child: Container(
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: Colors.green,
+                                          width: 1.3,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: const [
+                                          Icon(Icons.chat, color: Colors.green),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            'Whatsapp',
+                                            style: TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 

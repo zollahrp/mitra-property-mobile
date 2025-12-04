@@ -1,5 +1,5 @@
 class VideoModel {
-  final int id;
+  final String id;
   final String link;
 
   VideoModel({
@@ -9,8 +9,8 @@ class VideoModel {
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(
-      id: json['id'],
-      link: json['link'],
+      id: json['id'].toString(), // <-- penting
+      link: json['link'] ?? '',
     );
   }
 }
