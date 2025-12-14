@@ -1,14 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mitra_property/service/saved_service.dart';
 
-class SavedFilledScreen extends StatelessWidget {
+import '../../models/property_model.dart';
+
+class SavedFilledScreen extends StatefulWidget {
   const SavedFilledScreen({super.key});
+
+  @override
+  State<SavedFilledScreen> createState() => _SavedFilledScreenState();
+}
+
+class _SavedFilledScreenState extends State<SavedFilledScreen> {
+  final SavedService savedService = SavedService();
+
+  List<PropertyModel> savedProperties = [];
+  bool isLoading = true;
+  bool _hasLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 🔥 reload setiap kali screen muncul
+    if (!_hasLoaded) {
+      _hasLoaded = true;
+      loadSavedProperties();
+    }
+  }
+
+  Future<void> loadSavedProperties() async {
+    setState(() => isLoading = true);
+
+    try {
+      final res = await savedService.getSavedProperties();
+      debugPrint("Saved properties count: ${res.length}");
+
+      setState(() {
+        savedProperties = res;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error load saved properties: $e");
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,20 +90,34 @@ class SavedFilledScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // ==== GRID PROPERTY ====
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 6, // nanti bisa dinamis
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.64,
-                ),
-                itemBuilder: (context, index) {
-                  return _buildSavedCard();
-                },
+              // ==== CONTENT ====
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : savedProperties.isEmpty
+                        ? const Center(
+                            child: Text("Belum ada property disimpan"),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: loadSavedProperties,
+                            child: GridView.builder(
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
+                              itemCount: savedProperties.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 0.64,
+                              ),
+                              itemBuilder: (context, index) {
+                                return _buildSavedCard(
+                                  savedProperties[index],
+                                );
+                              },
+                            ),
+                          ),
               ),
             ],
           ),
@@ -70,9 +127,13 @@ class SavedFilledScreen extends StatelessWidget {
   }
 
   // ================================
-  // CARD PROPERTY (Grid 2 kolom)
+  // CARD PROPERTY (Grid)
   // ================================
-  Widget _buildSavedCard() {
+  Widget _buildSavedCard(PropertyModel p) {
+    final harga = int.tryParse(p.harga ?? "0") ?? 0;
+    final hargaFormat =
+        "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -96,15 +157,22 @@ class SavedFilledScreen extends StatelessWidget {
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
-                child: Image.asset(
-                  'assets/images/property1.png',
+                child: Image.network(
+                  p.foto.isNotEmpty ? p.foto.first.photoUrl : "",
                   height: 120,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) {
+                    return Container(
+                      height: 120,
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.image, size: 40),
+                    );
+                  },
                 ),
               ),
 
-              // ICON BOOKMARK
+              // BOOKMARK ICON
               Positioned(
                 top: 10,
                 right: 10,
@@ -133,18 +201,20 @@ class SavedFilledScreen extends StatelessWidget {
                 // TAGS
                 Row(
                   children: [
-                    _buildTagGrey("Rumah"),
+                    _buildTagGrey(
+                      p.listingType == "sell" ? "Jual" : "Sewa",
+                    ),
                     const SizedBox(width: 6),
-                    _buildTagBlue("Rumah"),
+                    _buildTagBlue(p.propertyType),
                   ],
                 ),
 
                 const SizedBox(height: 8),
 
                 // PRICE
-                const Text(
-                  "Rp. 650 Juta",
-                  style: TextStyle(
+                Text(
+                  hargaFormat,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF4A6CF7),
@@ -154,11 +224,11 @@ class SavedFilledScreen extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // TITLE
-                const Text(
-                  "Lorem ipsum dolor sit amet\nLorem ipsum dolor sit",
+                Text(
+                  p.nama,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.25,
@@ -168,9 +238,9 @@ class SavedFilledScreen extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // LOCATION
-                const Text(
-                  "Kota Bogor, Jawa Barat",
-                  style: TextStyle(
+                Text(
+                  p.lokasi,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                   ),

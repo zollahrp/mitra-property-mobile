@@ -5,6 +5,7 @@ import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import 'package:mitra_property/screens/home/filter_modal.dart';
 import 'package:mitra_property/service/property_service.dart';
+import 'package:mitra_property/service/saved_service.dart';
 import 'package:mitra_property/service/video_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -24,13 +25,16 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PropertyModel> properties = [];
   List<VideoModel> videos = [];
   bool isLoading = true;
+  bool isLoadingVideos = true;
+
   Map<String, dynamic> activeFilters = {};
   List<PropertyModel> allProperties = [];
-  bool isLoadingVideos = true;
+
   TextEditingController searchCtrl = TextEditingController();
+
+  final SavedService savedService = SavedService();
   Set<String> savedIds = {};
-  //   bool isLoadingVideos = true;
-  // List<VideoModel> videos = [];
+  Set<String> savingIds = {};
 
   String getYoutubeId(String url) {
     try {
@@ -75,7 +79,15 @@ class _HomeScreenState extends State<HomeScreen> {
     loadUsername();
     loadProperties();
     loadSaved();
+    _initData();
   }
+
+  Future<void> _initData() async {
+  await loadSaved();      // 🔥 TUNGGU DULU
+  await loadProperties(); // baru load list
+  fetchVideos();
+  loadUsername();
+}
 
   void _openFilterSheet(BuildContext context) {
     showModalBottomSheet(
@@ -175,31 +187,92 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> toggleSaved(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> saved = prefs.getStringList("saved_properties") ?? [];
+  // Future<void> toggleSaved(String id) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   List<String> saved = prefs.getStringList("saved_properties") ?? [];
 
-    if (saved.contains(id)) {
-      saved.remove(id);
-    } else {
-      saved.add(id);
-    }
+  //   if (saved.contains(id)) {
+  //     saved.remove(id);
+  //   } else {
+  //     saved.add(id);
+  //   }
 
-    await prefs.setStringList("saved_properties", saved);
+  //   await prefs.setStringList("saved_properties", saved);
+
+  //   setState(() {
+  //     savedIds = saved.toSet(); // update UI
+  //   });
+  // }
+
+  Future<void> _toggleBookmark(PropertyModel p) async {
+    final id = p.id;
+    final isSaved = savedIds.contains(id);
+
+    if (savingIds.contains(id)) return;
 
     setState(() {
-      savedIds = saved.toSet(); // update UI
+      savingIds.add(id);
+
+      // 🔥 optimistic UI
+      if (isSaved) {
+        savedIds.remove(id);
+      } else {
+        savedIds.add(id);
+      }
     });
+
+    try {
+      if (isSaved) {
+        await savedService.removeSavedProperty(id);
+
+        _showSnack("Property dihapus dari simpanan");
+      } else {
+        await savedService.saveProperty(id);
+
+        _showSnack("Property berhasil disimpan");
+      }
+    } catch (e) {
+      // ❌ rollback kalau gagal
+      setState(() {
+        if (isSaved) {
+          savedIds.add(id);
+        } else {
+          savedIds.remove(id);
+        }
+      });
+
+      _showSnack("Gagal menyimpan property");
+      debugPrint("Bookmark error: $e");
+    } finally {
+      setState(() {
+        savingIds.remove(id);
+      });
+    }
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   Future<void> loadSaved() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> saved = prefs.getStringList("saved_properties") ?? [];
-
+  try {
+    final saved = await savedService.getSavedProperties();
     setState(() {
-      savedIds = saved.toSet();
+      savedIds = saved.map((e) => e.id).toSet();
     });
+  } catch (e) {
+    debugPrint("Load saved error: $e");
   }
+}
+
 
   Future<void> loadUsername() async {
     final prefs = await SharedPreferences.getInstance();
@@ -663,23 +736,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         topLeft: Radius.circular(16),
                                         topRight: Radius.circular(16),
                                       ),
-                                      child: Image.network(
+                                      child: _buildPropertyImage(
                                         p.foto.isNotEmpty
                                             ? p.foto.first.photoUrl
-                                            : "https://via.placeholder.com/300",
-                                        height: 120,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) => Image.network(
-                                              "https://via.placeholder.com/300",
-                                              height: 120,
-                                              fit: BoxFit.cover,
-                                            ),
+                                            : null,
                                       ),
                                     ),
 
@@ -822,6 +882,8 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: properties.length,
               itemBuilder: (context, index) {
                 final p = properties[index];
+                final isSaved = savedIds.contains(p.id);
+                final isSaving = savingIds.contains(p.id);
 
                 // Convert harga → int → formatted
                 final harga = int.tryParse(p.harga ?? "0") ?? 0;
@@ -862,19 +924,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 topLeft: Radius.circular(20),
                                 topRight: Radius.circular(20),
                               ),
-                              child: Image.network(
+                              child: _buildPropertyImage(
                                 p.foto.isNotEmpty
                                     ? p.foto.first.photoUrl
-                                    : "https://via.placeholder.com/300",
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Image.network(
-                                      "https://via.placeholder.com/300",
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    : null,
                               ),
                             ),
 
@@ -882,16 +935,67 @@ class _HomeScreenState extends State<HomeScreen> {
                             Positioned(
                               top: 12,
                               right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: const Icon(
-                                  Icons.bookmark_border,
-                                  color: Colors.grey,
-                                  size: 22,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final success = isSaved
+                                      ? await savedService.removeSavedProperty(
+                                          p.id,
+                                        )
+                                      : await savedService.saveProperty(p.id);
+
+                                  if (!success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Gagal memperbarui bookmark",
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  setState(() {
+                                    if (isSaved) {
+                                      savedIds.remove(p.id);
+                                    } else {
+                                      savedIds.add(p.id);
+                                    }
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isSaved
+                                            ? "Property dihapus dari tersimpan"
+                                            : "Property berhasil disimpan",
+                                      ),
+                                    ),
+                                  );
+                                },
+
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: isSaving
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Icon(
+                                          savedIds.contains(p.id)
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
+                                          color: savedIds.contains(p.id)
+                                              ? const Color(0xFF4A6CF7)
+                                              : Colors.grey,
+                                          size: 22,
+                                        ),
                                 ),
                               ),
                             ),
@@ -1042,6 +1146,45 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+    );
+  }
+
+  Widget _buildPropertyImage(String? imageUrl) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+      child: Image.network(
+        imageUrl ?? "",
+        height: 150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+
+        // ===== LOADING STATE =====
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+
+          return Container(
+            height: 150,
+            width: double.infinity,
+            color: Colors.grey.shade200,
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
+
+        // ===== ERROR / EMPTY =====
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/property_placeholder.png',
+            height: 150,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          );
+        },
+      ),
     );
   }
 

@@ -225,10 +225,10 @@ class SignUpScreen extends StatelessWidget {
         "password": passC.text,
       };
 
-      final response = await dio.post(
-        "https://api.mitrapropertysentul.com/auth/register",
-        data: data,
-      );
+        final response = await dio.post(
+          "https://api.mitrapropertysentul.com/auth/register",
+          data: data,
+        );
 
       print("STATUS: ${response.statusCode}");
       print("DATA: ${response.data}");

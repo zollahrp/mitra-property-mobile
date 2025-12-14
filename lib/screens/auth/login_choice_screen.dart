@@ -6,118 +6,127 @@ class LoginChoiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Bagian atas (gambar full)
+          // ===== HEADER =====
           Container(
             width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.45,
+            height: size.height * 0.45,
             decoration: const BoxDecoration(
-              color: Color(0xFF5067EB),
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF5067EB),
+                  Color(0xFF6C7CFF),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+                bottomLeft: Radius.circular(36),
+                bottomRight: Radius.circular(36),
               ),
             ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-              child: Align(
-                alignment: Alignment.bottomCenter,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20),
                 child: Image.asset(
                   'assets/images/header_house.png',
-                  width: 450,
-                  height: 300,
+                  width: 420,
                   fit: BoxFit.contain,
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
 
-          // Bagian bawah (konten)
+          // ===== CONTENT =====
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
-                  'Masuk atau Daftar',
+                  'Welcome',
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 const Text(
-                  'Untuk Mendapatkan Pengalaman Sepenuhnya Dalam Pencarian Properti',
+                  'Login atau daftar untuk mendapatkan\npengalaman terbaik dalam pencarian properti.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF5067EB),
+                    fontSize: 14.5,
+                    height: 1.5,
+                    color: Colors.black54,
                   ),
                 ),
-                const SizedBox(height: 40),
 
-                // Tombol Sign In
+                const SizedBox(height: 36),
+
+                // ===== LOGIN BUTTON =====
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 54,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.signIn);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5067EB),
+                      elevation: 6,
+                      shadowColor: const Color(0xFF5067EB).withOpacity(0.4),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(32),
                       ),
-                      elevation: 3,
                     ),
                     child: const Text(
-                      'Sign In',
+                      'Login',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 28),
 
-                // Garis dengan tulisan "Or sign up"
-                const Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                // ===== DIVIDER =====
+                Row(
+                  children: const [
+                    Expanded(child: Divider(thickness: 1)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'Or Sign Up',
+                        'OR',
                         style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                           color: Colors.grey,
-                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
                     ),
-                    Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                    Expanded(child: Divider(thickness: 1)),
                   ],
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 28),
 
-                // Tombol Sign Up (outline)
+                // ===== REGISTER BUTTON =====
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 54,
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.signUp);
@@ -125,30 +134,30 @@ class LoginChoiceScreen extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
                         color: Color(0xFF5067EB),
-                        width: 2,
+                        width: 1.6,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(32),
                       ),
                     ),
                     child: const Text(
-                      'Sign Up',
+                      'Create an Account',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
                         color: Color(0xFF5067EB),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 40),
 
                 const Text(
-                  '© 2025 . All Rights Reserved.',
+                  '© 2025 • All Rights Reserved Mitra Property',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 11.5,
                     color: Colors.grey,
                   ),
                 ),
