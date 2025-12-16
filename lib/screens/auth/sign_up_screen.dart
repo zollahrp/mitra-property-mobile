@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:mitra_property/screens/auth/sign_in_screen.dart';
 
 final TextEditingController namaC = TextEditingController();
 final TextEditingController alamatC = TextEditingController();
@@ -178,7 +179,7 @@ class SignUpScreen extends StatelessWidget {
                             print("Password tidak sama");
                             return;
                           }
-                          registerUser();
+                          registerUser(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A6CF7),
@@ -207,7 +208,7 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Future<void> registerUser() async {
+  Future<void> registerUser(BuildContext context) async {
     try {
       final dio = Dio(
         BaseOptions(
@@ -225,15 +226,41 @@ class SignUpScreen extends StatelessWidget {
         "password": passC.text,
       };
 
-        final response = await dio.post(
-          "https://api.mitrapropertysentul.com/auth/register",
-          data: data,
-        );
+      final response = await dio.post(
+        "https://api.mitrapropertysentul.com/auth/register",
+        data: data,
+      );
 
-      print("STATUS: ${response.statusCode}");
-      print("DATA: ${response.data}");
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // ✅ POPUP
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Berhasil"),
+            content: const Text("Akun berhasil dibuat. Silakan login."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // tutup dialog
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SignInScreen()),
+                  );
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.data['message'] ?? 'Register gagal')),
+        );
+      }
     } catch (e) {
-      print("ERROR: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 

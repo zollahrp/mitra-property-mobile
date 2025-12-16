@@ -17,14 +17,13 @@ class PropertyPhoto {
   });
 
   factory PropertyPhoto.fromJson(Map<String, dynamic> json) {
-  return PropertyPhoto(
-    id: json["id"]?.toString() ?? "",
-    photoUrl: json["photo_url"] ?? "",
-    propertyId: json["property_id"]?.toString() ?? "",
-    createdAt: json["created_at"] ?? "",
-  );
-}
-
+    return PropertyPhoto(
+      id: json["id"],
+      photoUrl: json["photo_url"],
+      propertyId: json["propertyId"],
+      createdAt: json["created_at"],
+    );
+  }
 }
 
 /// =============================================
@@ -92,42 +91,39 @@ class PropertyModel {
   });
 
   factory PropertyModel.fromJson(Map<String, dynamic> json) {
-  return PropertyModel(
-    id: json["id"]?.toString() ?? "",
-    nama: json["nama"] ?? "",
-    lokasi: json["lokasi"] ?? "",
-    deskripsi: json["deskripsi"] ?? "",
-    harga: json["harga"]?.toString() ?? "0",
-    luasTanah: json["luas_tanah"]?.toString() ?? "0",
-    luasBangunan: json["luas_bangunan"]?.toString() ?? "0",
-    kamarTidur: json["kamar_tidur"] ?? 0,
-    kamarMandi: json["kamar_mandi"] ?? 0,
-    dapur: json["dapur"] ?? 0,
-    garasi: json["garasi"] ?? 0,
-    carport: json["carport"] ?? 0,
-    listrik: json["listrik"]?.toString() ?? "",
-    air: json["air"]?.toString() ?? "",
-    sertifikat: json["sertifikat"] ?? "",
-    furnish: json["furnish"] ?? "",
-    hadap: json["hadap"] ?? "",
-    propertyType: json["property_type"] ?? "",
-    tipe: json["tipe"],
-    listingType: json["listing_type"] ?? "",
-    status: json["status"] ?? "",
-    rejectReason: json["reject_reason"],
-    userId: json["user_id"]?.toString() ?? "",
-    views: json["views"] ?? 0,
-    clicks: json["clicks"] ?? 0,
-    createdAt: json["created_at"] ?? "",
-    updatedAt: json["updated_at"] ?? "",
-    foto: json["foto"] is List
-        ? (json["foto"] as List)
-            .map((e) => PropertyPhoto.fromJson(e))
-            .toList()
-        : [],
-  );
-}
-
+    return PropertyModel(
+      id: json["id"],
+      nama: json["nama"],
+      lokasi: json["lokasi"],
+      deskripsi: json["deskripsi"],
+      harga: json["harga"],
+      luasTanah: json["luas_tanah"],
+      luasBangunan: json["luas_bangunan"],
+      kamarTidur: json["kamar_tidur"],
+      kamarMandi: json["kamar_mandi"],
+      dapur: json["dapur"],
+      garasi: json["garasi"],
+      carport: json["carport"],
+      listrik: json["listrik"],
+      air: json["air"],
+      sertifikat: json["sertifikat"],
+      furnish: json["furnish"],
+      hadap: json["hadap"],
+      propertyType: json["property_type"],
+      tipe: json["tipe"],
+      listingType: json["listing_type"],
+      status: json["status"],
+      rejectReason: json["reject_reason"],
+      userId: json["userId"],
+      views: json["views"],
+      clicks: json["clicks"],
+      createdAt: json["created_at"],
+      updatedAt: json["updated_at"],
+      foto: (json["foto"] as List<dynamic>)
+          .map((e) => PropertyPhoto.fromJson(e))
+          .toList(),
+    );
+  }
 
   get photos => null;
 }
