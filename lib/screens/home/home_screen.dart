@@ -13,11 +13,109 @@ import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum BookmarkState { idle, loading }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class BookmarkButton extends StatefulWidget {
+  final bool isSaved;
+  final Future<bool> Function(bool wasSaved) onToggle;
+
+  const BookmarkButton({
+    super.key,
+    required this.isSaved,
+    required this.onToggle,
+  });
+
+  @override
+  State<BookmarkButton> createState() => _BookmarkButtonState();
+}
+
+class _BookmarkButtonState extends State<BookmarkButton> {
+  BookmarkState state = BookmarkState.idle;
+
+  Future<void> _handleTap() async {
+    if (state == BookmarkState.loading) return;
+
+    final wasSaved = widget.isSaved;
+
+    setState(() => state = BookmarkState.loading);
+
+    final success = await widget.onToggle(wasSaved);
+
+    if (!mounted) return;
+
+    setState(() => state = BookmarkState.idle);
+
+    if (success) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              wasSaved
+                  ? "Property berhasil dihapus dari simpanan"
+                  : "Property berhasil disimpan",
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+    } else {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text("Gagal memperbarui bookmark"),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: state == BookmarkState.loading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation(Color(0xFF4A6CF7)),
+                  ),
+                )
+              : Icon(
+                  widget.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  key: ValueKey(widget.isSaved),
+                  size: 22,
+                  color: widget.isSaved ? const Color(0xFF4A6CF7) : Colors.grey,
+                ),
+        ),
+      ),
+    );
+  }
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -718,7 +816,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         final p = properties[index];
                         final isSaved = savedIds.contains(p.id);
 
-
                         // === FIX harga ===
                         final harga = int.tryParse(p.harga ?? "0") ?? 0;
                         final hargaFormat =
@@ -770,67 +867,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Positioned(
                                       top: 10,
                                       right: 10,
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          final success = isSaved
-                                              ? await savedService
-                                                    .removeSavedProperty(p.id)
-                                              : await savedService.saveProperty(
-                                                  p.id,
-                                                );
-
-                                          if (!success) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  "Gagal memperbarui bookmark",
-                                                ),
-                                              ),
-                                            );
-                                            return;
-                                          }
-
-                                          setState(() {
-                                            if (isSaved) {
-                                              savedIds.remove(p.id);
+                                      child: BookmarkButton(
+                                        isSaved: savedIds.contains(p.id),
+                                        onToggle: (wasSaved) async {
+                                          try {
+                                            if (wasSaved) {
+                                              await savedService
+                                                  .removeSavedProperty(p.id);
                                             } else {
-                                              savedIds.add(p.id);
+                                              await savedService.saveProperty(
+                                                p.id,
+                                              );
                                             }
-                                          });
 
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                isSaved
-                                                    ? "Property dihapus dari tersimpan"
-                                                    : "Property berhasil disimpan",
-                                              ),
-                                            ),
-                                          );
+                                            setState(() {
+                                              if (wasSaved) {
+                                                savedIds.remove(p.id);
+                                              } else {
+                                                savedIds.add(p.id);
+                                              }
+                                            });
+
+                                            return true;
+                                          } catch (e) {
+                                            return false;
+                                          }
                                         },
-
-                                        child: Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              50,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            isSaved
-                                                ? Icons.bookmark
-                                                : Icons.bookmark_border,
-                                            color: isSaved
-                                                ? const Color(0xFF4A6CF7)
-                                                : Colors.grey,
-                                            size: 20,
-                                          ),
-                                        ),
                                       ),
                                     ),
                                   ],
@@ -992,63 +1054,31 @@ class _HomeScreenState extends State<HomeScreen> {
                             Positioned(
                               top: 12,
                               right: 12,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final success = isSaved
-                                      ? await savedService.removeSavedProperty(
-                                          p.id,
-                                        )
-                                      : await savedService.saveProperty(p.id);
-
-                                  if (!success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Gagal memperbarui bookmark",
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  // ✅ INI TEMPAT setState NYA
-                                  setState(() {
-                                    if (isSaved) {
-                                      savedIds.remove(p.id);
+                              child: BookmarkButton(
+                                isSaved: savedIds.contains(p.id),
+                                onToggle: (wasSaved) async {
+                                  try {
+                                    if (wasSaved) {
+                                      await savedService.removeSavedProperty(
+                                        p.id,
+                                      );
                                     } else {
-                                      savedIds.add(p.id);
+                                      await savedService.saveProperty(p.id);
                                     }
-                                  });
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        isSaved
-                                            ? "Property dihapus dari tersimpan"
-                                            : "Property berhasil disimpan",
-                                      ),
-                                    ),
-                                  );
+                                    setState(() {
+                                      if (wasSaved) {
+                                        savedIds.remove(p.id);
+                                      } else {
+                                        savedIds.add(p.id);
+                                      }
+                                    });
+
+                                    return true;
+                                  } catch (e) {
+                                    return false;
+                                  }
                                 },
-
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-
-                                  // ✅ ICON TARO DI SINI
-                                  child: Icon(
-                                    isSaved
-                                        ? Icons.bookmark
-                                        : Icons.bookmark_border,
-                                    color: isSaved
-                                        ? const Color(0xFF4A6CF7)
-                                        : Colors.grey,
-                                    size: 22,
-                                  ),
-                                ),
                               ),
                             ),
                           ],

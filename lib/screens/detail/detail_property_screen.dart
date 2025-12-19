@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:mitra_property/models/property_model.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mitra_property/service/saved_service.dart';
+
+enum BookmarkState { idle, loading }
 
 class DetailPropertyScreen extends StatefulWidget {
   final PropertyModel property;
@@ -16,6 +19,102 @@ class DetailPropertyScreen extends StatefulWidget {
 
   @override
   State<DetailPropertyScreen> createState() => _DetailPropertyScreenState();
+}
+
+class BookmarkButton extends StatefulWidget {
+  final bool isSaved;
+  final Future<bool> Function(bool wasSaved) onToggle;
+
+  const BookmarkButton({
+    super.key,
+    required this.isSaved,
+    required this.onToggle,
+  });
+
+  @override
+  State<BookmarkButton> createState() => _BookmarkButtonState();
+}
+
+class _BookmarkButtonState extends State<BookmarkButton> {
+  BookmarkState state = BookmarkState.idle;
+
+  Future<void> _handleTap() async {
+    if (state == BookmarkState.loading) return;
+
+    final wasSaved = widget.isSaved;
+
+    setState(() => state = BookmarkState.loading);
+
+    final success = await widget.onToggle(wasSaved);
+
+    if (!mounted) return;
+
+    setState(() => state = BookmarkState.idle);
+
+    if (success) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              wasSaved
+                  ? "Property berhasil dihapus dari simpanan"
+                  : "Property berhasil disimpan",
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+    } else {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text("Gagal memperbarui bookmark"),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: state == BookmarkState.loading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    valueColor: AlwaysStoppedAnimation(Color(0xFF4A6CF7)),
+                  ),
+                )
+              : Icon(
+                  widget.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  key: ValueKey(widget.isSaved),
+                  size: 22,
+                  color: widget.isSaved ? const Color(0xFF4A6CF7) : Colors.grey,
+                ),
+        ),
+      ),
+    );
+  }
 }
 
 class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
@@ -39,6 +138,10 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   bool isLoadingVideos = true;
   TextEditingController searchCtrl = TextEditingController();
 
+  final SavedService savedService = SavedService();
+  Set<String> savedIds = {};
+  bool isLoadingSaved = true;
+
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
 
@@ -46,6 +149,19 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   void initState() {
     super.initState();
     loadProperties();
+    loadSavedProperties();
+  }
+
+  Future<void> loadSavedProperties() async {
+    try {
+      final ids = await savedService.getSavedIds();
+      setState(() {
+        savedIds = ids.toSet();
+        isLoadingSaved = false;
+      });
+    } catch (e) {
+      isLoadingSaved = false;
+    }
   }
 
   String getDescriptionPreview(String text) {
@@ -352,19 +468,54 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   // ==== IMAGE ====
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                    ),
-                                    child: Image.network(
-                                      p.foto.isNotEmpty
-                                          ? p.foto.first.photoUrl
-                                          : "https://via.placeholder.com/300",
-                                      height: 120,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
+                                        ),
+                                        child: Image.network(
+                                          p.foto.isNotEmpty
+                                              ? p.foto.first.photoUrl
+                                              : "https://via.placeholder.com/300",
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+
+                                      // ==== BOOKMARK ====
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: BookmarkButton(
+                                          isSaved: savedIds.contains(p.id),
+                                          onToggle: (wasSaved) async {
+                                            try {
+                                              if (wasSaved) {
+                                                await savedService
+                                                    .removeSavedProperty(p.id);
+                                              } else {
+                                                await savedService.saveProperty(
+                                                  p.id,
+                                                );
+                                              }
+
+                                              setState(() {
+                                                wasSaved
+                                                    ? savedIds.remove(p.id)
+                                                    : savedIds.add(p.id);
+                                              });
+
+                                              return true;
+                                            } catch (_) {
+                                              return false;
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
 
                                   // ==== CONTENT ====
@@ -553,7 +704,30 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
         Positioned(
           top: 16,
           right: 16,
-          child: _circleButton(icon: Icons.bookmark_border, onTap: () {}),
+          child: BookmarkButton(
+            isSaved: savedIds.contains(widget.property.id),
+            onToggle: (wasSaved) async {
+              try {
+                if (wasSaved) {
+                  await savedService.removeSavedProperty(widget.property.id);
+                } else {
+                  await savedService.saveProperty(widget.property.id);
+                }
+
+                setState(() {
+                  if (wasSaved) {
+                    savedIds.remove(widget.property.id);
+                  } else {
+                    savedIds.add(widget.property.id);
+                  }
+                });
+
+                return true;
+              } catch (e) {
+                return false;
+              }
+            },
+          ),
         ),
 
         // ==== THUMBNAIL BAR ====
