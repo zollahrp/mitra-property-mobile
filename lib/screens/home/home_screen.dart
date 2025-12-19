@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final SavedService savedService = SavedService();
   Set<String> savedIds = {};
-  Set<String> savingIds = {};
+  bool isLoadingSaved = true;
 
   String getYoutubeId(String url) {
     try {
@@ -82,6 +82,16 @@ class _HomeScreenState extends State<HomeScreen> {
     loadSaved();
     _initData();
     loadUserData();
+    loadSavedIds();
+  }
+
+  Future<void> loadSavedIds() async {
+    final ids = await savedService.getSavedIds();
+
+    setState(() {
+      savedIds = ids;
+      isLoadingSaved = false;
+    });
   }
 
   Future<void> _initData() async {
@@ -218,10 +228,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final id = p.id;
     final isSaved = savedIds.contains(id);
 
-    if (savingIds.contains(id)) return;
+    if (savedIds.contains(id)) return;
 
     setState(() {
-      savingIds.add(id);
+      savedIds.add(id);
 
       // 🔥 optimistic UI
       if (isSaved) {
@@ -255,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("Bookmark error: $e");
     } finally {
       setState(() {
-        savingIds.remove(id);
+        savedIds.remove(id);
       });
     }
   }
@@ -894,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 final p = properties[index];
                 final isSaved = savedIds.contains(p.id);
-                final isSaving = savingIds.contains(p.id);
+                // final isSaving = savedIds.contains(p.id);
 
                 // Convert harga → int → formatted
                 final harga = int.tryParse(p.harga ?? "0") ?? 0;
@@ -943,7 +953,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
 
-                            // Bookmark icon
+                            // ===== BOOKMARK ICON =====
                             Positioned(
                               top: 12,
                               right: 12,
@@ -966,6 +976,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     return;
                                   }
 
+                                  // ✅ INI TEMPAT setState NYA
                                   setState(() {
                                     if (isSaved) {
                                       savedIds.remove(p.id);
@@ -991,23 +1002,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(50),
                                   ),
-                                  child: isSaving
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : Icon(
-                                          savedIds.contains(p.id)
-                                              ? Icons.bookmark
-                                              : Icons.bookmark_border,
-                                          color: savedIds.contains(p.id)
-                                              ? const Color(0xFF4A6CF7)
-                                              : Colors.grey,
-                                          size: 22,
-                                        ),
+
+                                  // ✅ ICON TARO DI SINI
+                                  child: Icon(
+                                    isSaved
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border,
+                                    color: isSaved
+                                        ? const Color(0xFF4A6CF7)
+                                        : Colors.grey,
+                                    size: 22,
+                                  ),
                                 ),
                               ),
                             ),

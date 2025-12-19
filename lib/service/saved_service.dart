@@ -79,4 +79,27 @@ class SavedService {
 
     return [];
   }
+
+  Future<Set<String>> getSavedIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
+
+    if (token.isEmpty) return {};
+
+    final url = Uri.parse("$baseUrl/users/saved/show");
+
+    final res = await http.get(
+      url,
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      final List items = body["items"] ?? [];
+
+      return items.map<String>((e) => e["property"]["id"] as String).toSet();
+    }
+
+    return {};
+  }
 }
