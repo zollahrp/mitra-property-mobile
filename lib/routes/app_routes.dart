@@ -8,7 +8,6 @@ import '../screens/auth/sign_in_screen.dart';
 import '../screens/auth/sign_up_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/detail/detail_property_screen.dart';
-import '../screens/saved/saved_empty_screen.dart';
 import '../screens/saved/saved_filled_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/show_profile_screen.dart';
@@ -43,10 +42,10 @@ class AppRoutes {
     forgotPassword: (context) => ForgotPasswordScreen(),
     // detailProperty: (context) => const DetailPropertyScreen(),
     // savedEmpty: (context) => const SavedEmptyScreen(),
-    // savedFilled: (context) => const SavedFilledScreen(),
-    // profile: (context) => const ProfileScreen(),
-    // showProfile: (context) => const ShowProfileScreen(),
-    // faq: (context) => const FAQScreen(),
+    savedFilled: (context) => const SavedFilledScreen(),
+    profile: (context) => const ProfileScreen(),
+    showProfile: (context) => const ShowProfileScreen(),
+    faq: (context) => const FAQScreen(),
     // search: (context) => const SearchScreen(),
     // filter: (context) => const FilterScreen(),
     // navbar: (context) => const BottomNavbar(),

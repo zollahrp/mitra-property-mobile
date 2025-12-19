@@ -7,27 +7,28 @@ import '../../models/property_model.dart';
 class SavedFilledScreen extends StatefulWidget {
   const SavedFilledScreen({super.key});
 
-  @override
-  State<SavedFilledScreen> createState() => _SavedFilledScreenState();
+@override
+State<SavedFilledScreen> createState() => SavedFilledScreenState();
 }
 
-class _SavedFilledScreenState extends State<SavedFilledScreen> {
+class SavedFilledScreenState extends State<SavedFilledScreen> {
   final SavedService savedService = SavedService();
 
   List<PropertyModel> savedProperties = [];
   bool isLoading = true;
-  bool _hasLoaded = false;
+  // bool _hasLoaded = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+@override
+void initState() {
+  super.initState();
+}
 
-    // 🔥 reload setiap kali screen muncul
-    if (!_hasLoaded) {
-      _hasLoaded = true;
-      loadSavedProperties();
-    }
-  }
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  loadSavedProperties();
+}
+
 
   Future<void> loadSavedProperties() async {
     setState(() => isLoading = true);

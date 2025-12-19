@@ -96,36 +96,43 @@ class PropertyModel {
 
   factory PropertyModel.fromJson(Map<String, dynamic> json) {
     return PropertyModel(
-      id: json["id"],
-      nama: json["nama"],
-      kode: json["kode"],
-      lokasi: json["lokasi"],
-      deskripsi: json["deskripsi"],
-      harga: json["harga"],
-      luasTanah: json["luas_tanah"],
-      luasBangunan: json["luas_bangunan"],
-      kamarTidur: json["kamar_tidur"],
-      kamarMandi: json["kamar_mandi"],
-      dapur: json["dapur"],
-      garasi: json["garasi"],
-      carport: json["carport"],
-      listrik: json["listrik"],
-      air: json["air"],
-      sertifikat: json["sertifikat"],
-      furnish: json["furnish"],
-      hadap: json["hadap"],
-      propertyType: json["property_type"],
-      type: json["type"],
-      listingType: json["listing_type"],
-      status: json["status"],
-      rejectReason: json["reject_reason"],
-      userId: json["userId"],
+      id: json["id"] ?? "",
+      nama: json["nama"] ?? "",
+      kode: json["kode"] ?? "",
+      lokasi: json["lokasi"] ?? "",
+      deskripsi: json["deskripsi"] ?? "",
+      harga: json["harga"] ?? "0",
+
+      luasTanah: json["luas_tanah"]?.toString() ?? "0",
+      luasBangunan: json["luas_bangunan"]?.toString() ?? "0",
+
+      kamarTidur: json["kamar_tidur"] ?? 0,
+      kamarMandi: json["kamar_mandi"] ?? 0,
+      dapur: json["dapur"] ?? 0,
+      garasi: json["garasi"] ?? 0,
+      carport: json["carport"] ?? 0,
+
+      listrik: json["listrik"]?.toString() ?? "",
+      air: json["air"]?.toString() ?? "",
+
+      sertifikat: json["sertifikat"] ?? "",
+      furnish: json["furnish"] ?? "",
+      hadap: json["hadap"] ?? "",
+      propertyType: json["property_type"] ?? "",
+      type: json["type"] ?? "",
+      listingType: json["listing_type"] ?? "",
+      status: json["status"] ?? "",
+      rejectReason: json["reject_reason"] ?? "",
+
+      userId: json["userId"] ?? "",
       views: json["views"] ?? 0,
       clicks: json["clicks"] ?? 0,
       telepon: json["telepon"] ?? "",
-      createdAt: json["created_at"],
-      updatedAt: json["updated_at"],
-      foto: (json["foto"] as List<dynamic>)
+
+      createdAt: json["created_at"] ?? "",
+      updatedAt: json["updated_at"] ?? "",
+
+      foto: (json["foto"] as List<dynamic>? ?? [])
           .map((e) => PropertyPhoto.fromJson(e))
           .toList(),
     );
@@ -170,10 +177,7 @@ class CreatePropertyResponse {
   final String message;
   final PropertyModel property;
 
-  CreatePropertyResponse({
-    required this.message,
-    required this.property,
-  });
+  CreatePropertyResponse({required this.message, required this.property});
 
   factory CreatePropertyResponse.fromJson(Map<String, dynamic> json) {
     return CreatePropertyResponse(

@@ -18,10 +18,12 @@ class _BottomNavbarState extends State<BottomNavbar> {
   DateTime? _lastPressed;
 
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+  final GlobalKey<SavedFilledScreenState> savedKey =
+    GlobalKey<SavedFilledScreenState>();
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     const HomeScreen(),
-    const SavedFilledScreen(),
+    SavedFilledScreen(key: savedKey),
     const ProfileScreen(),
   ];
 
@@ -71,7 +73,13 @@ class _BottomNavbarState extends State<BottomNavbar> {
               setState(() {
                 _selectedIndex = index;
               });
+
+              // 🔥 SAAT PINDAH KE TAB SAVED
+              if (index == 1) {
+                savedKey.currentState?.loadSavedProperties();
+              }
             },
+
             animationDuration: const Duration(milliseconds: 300),
             animationCurve: Curves.easeInOut,
           ),

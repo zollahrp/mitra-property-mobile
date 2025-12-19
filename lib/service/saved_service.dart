@@ -1,99 +1,82 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:mitra_property/models/property_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/property_model.dart';
 
 class SavedService {
-  late Dio dio;
+  static const baseUrl = "https://api.mitrapropertysentul.com";
 
-  SavedService() {
-    dio = Dio(
-      BaseOptions(
-        baseUrl: "https://api.mitrapropertysentul.com",
-        headers: {"Accept": "application/json"},
-      ),
-    );
-  }
-
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("token");
-  }
-
-  // =========================
-  // SAVE PROPERTY
-  // POST /users/saved/{id}
-  // =========================
+  /// =========================
+  /// SAVE PROPERTY
+  /// =========================
   Future<bool> saveProperty(String propertyId) async {
-    try {
-      final token = await _getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
 
-      final res = await dio.post(
-        "/users/saved/$propertyId",
-        options: Options(headers: {"Authorization": "Bearer $token"}),
-      );
+    if (token.isEmpty) return false;
 
-      debugPrint("SAVE → ${res.statusCode}");
-      debugPrint("SAVE DATA → ${res.data}");
+    final url = Uri.parse("$baseUrl/users/saved/$propertyId");
 
-      return res.statusCode == 200 || res.statusCode == 201;
-    } on DioException catch (e) {
-      debugPrint("SAVE ERROR → ${e.response?.statusCode}");
-      debugPrint("SAVE ERROR DATA → ${e.response?.data}");
-      return false;
-    }
-  }
-
-  // =========================
-  // DELETE SAVED PROPERTY
-  // DELETE /users/saved/{id}
-  // =========================
-  Future<bool> removeSavedProperty(String propertyId) async {
-    try {
-      final token = await _getToken();
-
-      final res = await dio.delete(
-        "/users/saved/$propertyId",
-        options: Options(headers: {"Authorization": "Bearer $token"}),
-      );
-
-      debugPrint("UNSAVE → ${res.statusCode}");
-      return res.statusCode == 200;
-    } on DioException catch (e) {
-      debugPrint("UNSAVE ERROR → ${e.response?.statusCode}");
-      debugPrint("UNSAVE ERROR DATA → ${e.response?.data}");
-      return false;
-    }
-  }
-
-  // =========================
-  // GET SAVED PROPERTIES
-  // GET /users/saved/show  ✅
-  // =========================
-  Future<List<PropertyModel>> getSavedProperties() async {
-    final token = await _getToken();
-
-    final res = await dio.get(
-      "/users/saved/show",
-      options: Options(headers: {"Authorization": "Bearer $token"}),
+    final res = await http.post(
+      url,
+      headers: {"Authorization": "Bearer $token"},
     );
 
-    final body = res.data;
+    print("SAVE → ${res.statusCode}");
+    print("SAVE BODY → ${res.body}");
 
-    if (body == null) return [];
+    return res.statusCode == 200 || res.statusCode == 201;
+  }
 
-    List list = [];
+  /// =========================
+  /// REMOVE SAVED
+  /// =========================
+  Future<bool> removeSavedProperty(String propertyId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
 
-    if (body["data"] is List) {
-      list = body["data"];
-    } else if (body["data"] is Map && body["data"]["data"] is List) {
-      list = body["data"]["data"];
+    if (token.isEmpty) return false;
+
+    final url = Uri.parse("$baseUrl/users/saved/$propertyId");
+
+    final res = await http.delete(
+      url,
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("DELETE → ${res.statusCode}");
+
+    return res.statusCode == 200;
+  }
+
+  /// =========================
+  /// GET SAVED PROPERTIES
+  /// =========================
+  Future<List<PropertyModel>> getSavedProperties() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
+
+    if (token.isEmpty) return [];
+
+    final url = Uri.parse("$baseUrl/users/saved/show");
+
+    final res = await http.get(
+      url,
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("GET SAVED → ${res.statusCode}");
+    print("GET SAVED BODY → ${res.body}");
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+
+      final List items = body["items"] ?? [];
+
+      /// 🔥 AMBIL object `property`-nya
+      return items.map((e) => PropertyModel.fromJson(e["property"])).toList();
     }
 
-    // 🔥 INI KUNCINYA
-    return list
-        .where((e) => e["property"] != null)
-        .map<PropertyModel>((e) => PropertyModel.fromJson(e["property"]))
-        .toList();
+    return [];
   }
 }
