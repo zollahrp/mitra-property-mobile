@@ -20,6 +20,7 @@ class DetailPropertyScreen extends StatefulWidget {
 
 class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   int currentIndex = 0;
+  int visibleWordCount = 100;
 
   // List gambar dari assets
   // final List<String> images = [
@@ -37,7 +38,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   List<PropertyModel> allProperties = [];
   bool isLoadingVideos = true;
   TextEditingController searchCtrl = TextEditingController();
-  
+
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
 
@@ -45,6 +46,21 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   void initState() {
     super.initState();
     loadProperties();
+  }
+
+  String getDescriptionPreview(String text) {
+    final words = text.split(RegExp(r'\s+'));
+
+    if (words.length <= visibleWordCount) {
+      return text;
+    }
+
+    return words.take(visibleWordCount).join(" ") + "...";
+  }
+
+  bool hasMoreWords(String text) {
+    final words = text.split(RegExp(r'\s+'));
+    return visibleWordCount < words.length;
   }
 
   Future<void> loadProperties() async {
@@ -800,7 +816,7 @@ Mohon informasi lebih lanjut terkait simulasi cicilan.
           const SizedBox(height: 10),
 
           Text(
-            property.deskripsi,
+            getDescriptionPreview(property.deskripsi),
             style: const TextStyle(
               fontSize: 14,
               color: Colors.black87,
@@ -810,20 +826,22 @@ Mohon informasi lebih lanjut terkait simulasi cicilan.
 
           const SizedBox(height: 10),
 
-          Row(
-            children: const [
-              Text(
-                "Muat Lebih Banyak",
+          if (hasMoreWords(property.deskripsi))
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  visibleWordCount += 100;
+                });
+              },
+              child: const Text(
+                "Baca Selengkapnya",
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF4A6CF7),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(width: 6),
-              Icon(Icons.keyboard_arrow_down, color: Color(0xFF4A6CF7)),
-            ],
-          ),
+            ),
         ],
       ),
     );

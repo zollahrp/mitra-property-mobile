@@ -50,7 +50,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
         return true;
       },
       child: Scaffold(
-        body: _screens[_selectedIndex],
+        body: IndexedStack(index: _selectedIndex, children: _screens),
         bottomNavigationBar: PhysicalModel(
           color: Colors.transparent,
           elevation: 12,
