@@ -6,8 +6,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class DetailPropertyScreen extends StatefulWidget {
   final PropertyModel property;
+  final String role; // ✅ SIMPAN ROLE
 
-  const DetailPropertyScreen({super.key, required this.property});
+  const DetailPropertyScreen({
+    super.key,
+    required this.property,
+    required this.role,
+  });
 
   @override
   State<DetailPropertyScreen> createState() => _DetailPropertyScreenState();
@@ -32,6 +37,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   List<PropertyModel> allProperties = [];
   bool isLoadingVideos = true;
   TextEditingController searchCtrl = TextEditingController();
+  
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
 
@@ -222,33 +228,31 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                         Container(
                           width: 48,
                           height: 48,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              image: AssetImage(
-                                "assets/images/marketing.png",
-                              ), // ganti sesuai asset
+                              image: AssetImage("assets/images/marketing.png"),
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
 
-                        // Nama + role
+                        // Nama + role (DINAMIS)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              "Marketing A",
+                          children: [
+                            const Text(
+                              "Marketing",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              "Team Marketing Mitra Property",
-                              style: TextStyle(
+                              "User ID: ${widget.property.userId.substring(0, 8)}",
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
                               ),
@@ -309,8 +313,10 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      DetailPropertyScreen(property: p),
+                                  builder: (_) => DetailPropertyScreen(
+                                    property: p,
+                                    role: widget.role,
+                                  ),
                                 ),
                               );
                             },
@@ -652,7 +658,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _detailItem("Type", property.tipe ?? "-"),
+              _detailItem("Type", property.type ?? "-"),
               _detailItem("Furnish", property.furnish),
               _detailItem("Certificate", property.sertifikat),
             ],
@@ -677,13 +683,17 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           const SizedBox(height: 24),
 
           // ===== AJUKAN SECTION =====
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    final msg =
-                        """
+          if (widget.role == "admin" || widget.role == "marketing") ...[
+            const SizedBox(height: 20),
+
+            // ===== AJUKAN SECTION =====
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      final msg =
+                          """
 Halo, saya ingin mengajukan perhitungan pajak untuk properti berikut:
 
 🏡 Nama: ${widget.property.nama}
@@ -693,47 +703,43 @@ Halo, saya ingin mengajukan perhitungan pajak untuk properti berikut:
 
 Mohon bantuannya ya.
 """;
-                    openWhatsApp(msg);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFE3B8),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(
-                          Icons.receipt_long_outlined,
-                          size: 26,
-                          color: Colors.black87,
-                        ),
-                        SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            "Ajukan\nPerhitungan Pajak",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                      openWhatsApp(msg);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFE3B8),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.receipt_long_outlined, size: 26),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              "Ajukan\nPerhitungan Pajak",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    final msg =
-                        """
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      final msg =
+                          """
 Halo, saya ingin mengajukan perhitungan KPR untuk properti berikut:
 
 🏡 Nama: ${widget.property.nama}
@@ -743,42 +749,43 @@ Halo, saya ingin mengajukan perhitungan KPR untuk properti berikut:
 
 Mohon informasi lebih lanjut terkait simulasi cicilan.
 """;
-                    openWhatsApp(msg);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4A6CF7),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(
-                          Icons.home_outlined,
-                          size: 26,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            "Ajukan\nPerhitungan KPR",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                      openWhatsApp(msg);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A6CF7),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.home_outlined,
+                            size: 26,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              "Ajukan\nPerhitungan KPR",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 30),
           const Divider(height: 1),

@@ -32,6 +32,7 @@ class PropertyPhoto {
 class PropertyModel {
   final String id;
   final String nama;
+  final String kode;
   final String lokasi;
   final String deskripsi;
   final String harga;
@@ -49,19 +50,21 @@ class PropertyModel {
   final String furnish;
   final String hadap;
   final String propertyType;
-  final String? tipe;
+  final String? type;
   final String listingType;
   final String status;
   final String? rejectReason;
   final String userId;
   final int views;
   final int clicks;
+  final String telepon;
   final String createdAt;
   final String updatedAt;
 
   PropertyModel({
     required this.id,
     required this.nama,
+    required this.kode,
     required this.lokasi,
     required this.deskripsi,
     required this.harga,
@@ -79,13 +82,14 @@ class PropertyModel {
     required this.furnish,
     required this.hadap,
     required this.propertyType,
-    required this.tipe,
+    required this.type,
     required this.listingType,
     required this.status,
     required this.rejectReason,
     required this.userId,
     required this.views,
     required this.clicks,
+    required this.telepon,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -94,6 +98,7 @@ class PropertyModel {
     return PropertyModel(
       id: json["id"],
       nama: json["nama"],
+      kode: json["kode"],
       lokasi: json["lokasi"],
       deskripsi: json["deskripsi"],
       harga: json["harga"],
@@ -110,13 +115,14 @@ class PropertyModel {
       furnish: json["furnish"],
       hadap: json["hadap"],
       propertyType: json["property_type"],
-      tipe: json["tipe"],
+      type: json["type"],
       listingType: json["listing_type"],
       status: json["status"],
       rejectReason: json["reject_reason"],
       userId: json["userId"],
-      views: json["views"],
-      clicks: json["clicks"],
+      views: json["views"] ?? 0,
+      clicks: json["clicks"] ?? 0,
+      telepon: json["telepon"] ?? "",
       createdAt: json["created_at"],
       updatedAt: json["updated_at"],
       foto: (json["foto"] as List<dynamic>)
@@ -124,8 +130,6 @@ class PropertyModel {
           .toList(),
     );
   }
-
-  get photos => null;
 }
 
 /// =============================================

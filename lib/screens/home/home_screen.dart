@@ -22,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String username = "";
+  String role = "";
   List<PropertyModel> properties = [];
   List<VideoModel> videos = [];
   bool isLoading = true;
@@ -80,14 +81,23 @@ class _HomeScreenState extends State<HomeScreen> {
     loadProperties();
     loadSaved();
     _initData();
+    loadUserData();
   }
 
   Future<void> _initData() async {
-  await loadSaved();      // 🔥 TUNGGU DULU
-  await loadProperties(); // baru load list
-  fetchVideos();
-  loadUsername();
-}
+    await loadSaved(); // 🔥 TUNGGU DULU
+    await loadProperties(); // baru load list
+    fetchVideos();
+    loadUsername();
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString("username") ?? "";
+      role = prefs.getString("role") ?? "user";
+    });
+  }
 
   void _openFilterSheet(BuildContext context) {
     showModalBottomSheet(
@@ -263,16 +273,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadSaved() async {
-  try {
-    final saved = await savedService.getSavedProperties();
-    setState(() {
-      savedIds = saved.map((e) => e.id).toSet();
-    });
-  } catch (e) {
-    debugPrint("Load saved error: $e");
+    try {
+      final saved = await savedService.getSavedProperties();
+      setState(() {
+        savedIds = saved.map((e) => e.id).toSet();
+      });
+    } catch (e) {
+      debugPrint("Load saved error: $e");
+    }
   }
-}
-
 
   Future<void> loadUsername() async {
     final prefs = await SharedPreferences.getInstance();
@@ -708,8 +717,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    DetailPropertyScreen(property: p),
+                                builder: (_) => DetailPropertyScreen(
+                                  property: p,
+                                  role: role,
+                                ),
                               ),
                             );
                           },
@@ -895,7 +906,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DetailPropertyScreen(property: p),
+                        builder: (_) =>
+                            DetailPropertyScreen(property: p, role: role),
                       ),
                     );
                   },

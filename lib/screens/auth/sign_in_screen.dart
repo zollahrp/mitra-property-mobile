@@ -155,6 +155,8 @@ class SignInScreen extends StatelessWidget {
         await prefs.setString("email", user["email"] ?? "");
         await prefs.setString("username", user["username"] ?? "");
         await prefs.setString("alamat", user["alamat"] ?? "");
+        await prefs.setString("role", response.data["role"] ?? "");
+
 
         Navigator.pushNamed(context, AppRoutes.home);
       }
