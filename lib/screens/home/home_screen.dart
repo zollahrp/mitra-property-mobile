@@ -716,6 +716,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       itemBuilder: (context, index) {
                         final p = properties[index];
+                        final isSaved = savedIds.contains(p.id);
+
 
                         // === FIX harga ===
                         final harga = int.tryParse(p.harga ?? "0") ?? 0;
@@ -764,20 +766,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
 
-                                    // === BOOKMARK ICON ===
+                                    // ===== BOOKMARK ICON =====
                                     Positioned(
                                       top: 10,
                                       right: 10,
                                       child: GestureDetector(
-                                        onTap: () {
+                                        onTap: () async {
+                                          final success = isSaved
+                                              ? await savedService
+                                                    .removeSavedProperty(p.id)
+                                              : await savedService.saveProperty(
+                                                  p.id,
+                                                );
+
+                                          if (!success) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Gagal memperbarui bookmark",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
                                           setState(() {
-                                            if (savedIds.contains(p.id)) {
+                                            if (isSaved) {
                                               savedIds.remove(p.id);
                                             } else {
                                               savedIds.add(p.id);
                                             }
                                           });
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                isSaved
+                                                    ? "Property dihapus dari tersimpan"
+                                                    : "Property berhasil disimpan",
+                                              ),
+                                            ),
+                                          );
                                         },
+
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
@@ -787,11 +822,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                           child: Icon(
-                                            savedIds.contains(p.id)
+                                            isSaved
                                                 ? Icons.bookmark
                                                 : Icons.bookmark_border,
-                                            color: savedIds.contains(p.id)
-                                                ? Colors.blue
+                                            color: isSaved
+                                                ? const Color(0xFF4A6CF7)
                                                 : Colors.grey,
                                             size: 20,
                                           ),
