@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/service/saved_service.dart';
 
 import '../../models/property_model.dart';
@@ -7,8 +8,8 @@ import '../../models/property_model.dart';
 class SavedFilledScreen extends StatefulWidget {
   const SavedFilledScreen({super.key});
 
-@override
-State<SavedFilledScreen> createState() => SavedFilledScreenState();
+  @override
+  State<SavedFilledScreen> createState() => SavedFilledScreenState();
 }
 
 class SavedFilledScreenState extends State<SavedFilledScreen> {
@@ -18,17 +19,16 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
   bool isLoading = true;
   // bool _hasLoaded = false;
 
-@override
-void initState() {
-  super.initState();
-}
+  @override
+  void initState() {
+    super.initState();
+  }
 
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  loadSavedProperties();
-}
-
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadSavedProperties();
+  }
 
   Future<void> loadSavedProperties() async {
     setState(() => isLoading = true);
@@ -61,10 +61,7 @@ void didChangeDependencies() {
               const Center(
                 child: Text(
                   "Disimpan",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
               ),
 
@@ -96,29 +93,24 @@ void didChangeDependencies() {
                 child: isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : savedProperties.isEmpty
-                        ? const Center(
-                            child: Text("Belum ada property disimpan"),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: loadSavedProperties,
-                            child: GridView.builder(
-                              physics:
-                                  const AlwaysScrollableScrollPhysics(),
-                              itemCount: savedProperties.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                    ? const Center(child: Text("Belum ada property disimpan"))
+                    : RefreshIndicator(
+                        onRefresh: loadSavedProperties,
+                        child: GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: savedProperties.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
                                 childAspectRatio: 0.64,
                               ),
-                              itemBuilder: (context, index) {
-                                return _buildSavedCard(
-                                  savedProperties[index],
-                                );
-                              },
-                            ),
-                          ),
+                          itemBuilder: (context, index) {
+                            return _buildSavedCard(savedProperties[index]);
+                          },
+                        ),
+                      ),
               ),
             ],
           ),
@@ -132,124 +124,148 @@ void didChangeDependencies() {
   // ================================
   Widget _buildSavedCard(PropertyModel p) {
     final harga = int.tryParse(p.harga ?? "0") ?? 0;
-    final hargaFormat =
-        "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+    final hargaFormat = "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailPropertyScreen(
+              property: p, // 🔥 KIRIM LANGSUNG
+              role: "user", // sesuaikan kalau ada role dynamic
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ==== IMAGE ====
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: Image.network(
-                  p.foto.isNotEmpty ? p.foto.first.photoUrl : "",
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
-                    return Container(
-                      height: 120,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.image, size: 40),
-                    );
-                  },
-                ),
-              ),
-
-              // BOOKMARK ICON
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: const Icon(
-                    Icons.bookmark,
-                    size: 22,
-                    color: Color(0xFF4A6CF7),
-                  ),
-                ),
-              )
-            ],
-          ),
-
-          // ==== CONTENT ====
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ==== IMAGE ====
+            Stack(
               children: [
-                // TAGS
-                Row(
-                  children: [
-                    _buildTagGrey(
-                      p.listingType == "sell" ? "Jual" : "Sewa",
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: Image.network(
+                    p.foto.isNotEmpty ? p.foto.first.photoUrl : "",
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) {
+                      return Container(
+                        height: 120,
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 40),
+                      );
+                    },
+                  ),
+                ),
+
+                // BOOKMARK ICON (STATIC - SAVED SCREEN)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () async {
+                      await savedService.removeSavedProperty(p.id);
+
+                      setState(() {
+                        savedProperties.removeWhere((e) => e.id == p.id);
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Property dihapus dari simpanan"),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: const Icon(
+                        Icons.bookmark,
+                        size: 22,
+                        color: Color(0xFF4A6CF7),
+                      ),
                     ),
-                    const SizedBox(width: 6),
-                    _buildTagBlue(p.propertyType),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                // PRICE
-                Text(
-                  hargaFormat,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF4A6CF7),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // TITLE
-                Text(
-                  p.nama,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // LOCATION
-                Text(
-                  p.lokasi,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
                   ),
                 ),
               ],
             ),
-          )
-        ],
+
+            // ==== CONTENT ====
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // TAGS
+                  Row(
+                    children: [
+                      _buildTagGrey(p.listingType == "sell" ? "Jual" : "Sewa"),
+                      const SizedBox(width: 6),
+                      _buildTagBlue(p.propertyType),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // PRICE
+                  Text(
+                    hargaFormat,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4A6CF7),
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // TITLE
+                  Text(
+                    p.nama,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // LOCATION
+                  Text(
+                    p.lokasi,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
