@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/service/saved_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../models/property_model.dart';
 
@@ -91,7 +92,111 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
               // ==== CONTENT ====
               Expanded(
                 child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 6,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.64,
+                            ),
+                        itemBuilder: (_, __) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // IMAGE
+                                  Container(
+                                    height: 120,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // TAGS
+                                        Row(
+                                          children: [
+                                            Container(
+                                              height: 20,
+                                              width: 50,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              height: 20,
+                                              width: 60,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 10),
+
+                                        // PRICE
+                                        Container(
+                                          height: 14,
+                                          width: 100,
+                                          color: Colors.grey,
+                                        ),
+
+                                        const SizedBox(height: 8),
+
+                                        // TITLE
+                                        Container(
+                                          height: 12,
+                                          width: double.infinity,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          height: 12,
+                                          width: 120,
+                                          color: Colors.grey,
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        // LOCATION
+                                        Container(
+                                          height: 10,
+                                          width: 90,
+                                          color: Colors.grey,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
                     : savedProperties.isEmpty
                     ? const Center(child: Text("Belum ada property disimpan"))
                     : RefreshIndicator(

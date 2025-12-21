@@ -11,6 +11,7 @@ import 'package:mitra_property/service/banner_service.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:mitra_property/service/saved_service.dart';
 import 'package:mitra_property/service/video_service.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../routes/app_routes.dart';
@@ -698,11 +699,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: ClipOval(
                                 child: ClipOval(
                                   child: isLoadingPhoto
-                                      ? const SizedBox(
-                                          width: 46,
-                                          height: 46,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
+                                      ? Shimmer.fromColors(
+                                          baseColor: Colors.grey.shade300,
+                                          highlightColor: Colors.grey.shade100,
+                                          child: Container(
+                                            width: 46,
+                                            height: 46,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.grey,
+                                              shape: BoxShape.circle,
+                                            ),
                                           ),
                                         )
                                       : Image.network(
@@ -881,17 +887,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height: 180,
                   child: isLoadingBanner
-                      ? const Center(child: CircularProgressIndicator())
-                      : banners.isEmpty
-                      ? Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Text(
-                            "Banner belum tersedia",
-                            style: TextStyle(color: Colors.grey),
+                      ? Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(
+                            height: 180,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                         )
                       : PageView.builder(
@@ -1016,7 +1020,70 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
 
                 isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 6,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio:
+                              MediaQuery.of(context).size.width /
+                              (MediaQuery.of(context).size.height * 0.85),
+                        ),
+                        itemBuilder: (_, __) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 120,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          height: 14,
+                                          width: 80,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Container(
+                                          height: 12,
+                                          width: 120,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Container(
+                                          height: 12,
+                                          width: double.infinity,
+                                          color: Colors.grey,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
                     : GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -1208,7 +1275,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       height: 365,
       child: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              itemBuilder: (_, __) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      width: 250,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
           : properties.isEmpty
           ? const Center(child: Text("Tidak ada property"))
           : ListView.builder(

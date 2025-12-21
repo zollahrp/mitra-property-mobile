@@ -3,6 +3,7 @@ import 'package:mitra_property/screens/auth/sign_in_screen.dart';
 import 'package:mitra_property/screens/profile/faq_screen.dart';
 import 'package:mitra_property/screens/profile/show_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -183,7 +184,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: Colors.white,
                       child: ClipOval(
                         child: isLoadingPhoto
-                            ? const CircularProgressIndicator()
+                            ? Shimmer.fromColors(
+                                baseColor: Colors.grey.shade300,
+                                highlightColor: Colors.grey.shade100,
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.grey,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              )
                             : Image.network(
                                 "${photoUrl!}?ts=${DateTime.now().millisecondsSinceEpoch}",
                                 width: 100,
