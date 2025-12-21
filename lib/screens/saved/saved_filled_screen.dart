@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/service/saved_service.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:mitra_property/utils/property_helper.dart';
 
 import '../../models/property_model.dart';
 
@@ -15,10 +16,12 @@ class SavedFilledScreen extends StatefulWidget {
 
 class SavedFilledScreenState extends State<SavedFilledScreen> {
   final SavedService savedService = SavedService();
+  List<PropertyModel> filteredProperties = [];
 
   List<PropertyModel> savedProperties = [];
   bool isLoading = true;
   // bool _hasLoaded = false;
+  TextEditingController searchCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -40,12 +43,26 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
 
       setState(() {
         savedProperties = res;
+        filteredProperties = res;
         isLoading = false;
       });
     } catch (e) {
       debugPrint("Error load saved properties: $e");
       setState(() => isLoading = false);
     }
+  }
+
+  void searchProperties(String query) {
+    final q = query.toLowerCase();
+
+    setState(() {
+      filteredProperties = savedProperties.where((p) {
+        return (p.lokasi ?? '').toLowerCase().contains(q) ||
+            (p.propertyType ?? '').toLowerCase().contains(q) ||
+            (p.listingType ?? '').toLowerCase().contains(q) ||
+            (p.harga ?? '').toLowerCase().contains(q);
+      }).toList();
+    });
   }
 
   @override
@@ -69,20 +86,47 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
               const SizedBox(height: 20),
 
               // ==== SEARCH BAR ====
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFF4A6CF7),
-                    width: 1.2,
+              SizedBox(
+                height: 48,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: "Cari Property",
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                  child: TextField(
+                    controller: searchCtrl,
+                    textAlignVertical: TextAlignVertical.center,
+                    onChanged: (value) {
+                      if (value.isEmpty) {
+                        setState(() {
+                          filteredProperties = savedProperties;
+                        });
+                      } else {
+                        searchProperties(value);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Cari Property...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: Colors.grey.shade600,
+                        size: 22,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
                   ),
                 ),
               ),
@@ -197,13 +241,14 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                           );
                         },
                       )
-                    : savedProperties.isEmpty
+                    : filteredProperties.isEmpty
                     ? const Center(child: Text("Belum ada property disimpan"))
                     : RefreshIndicator(
                         onRefresh: loadSavedProperties,
                         child: GridView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: savedProperties.length,
+                          // itemCount: savedProperties.length,
+                          itemCount: filteredProperties.length,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
@@ -212,7 +257,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                                 childAspectRatio: 0.64,
                               ),
                           itemBuilder: (context, index) {
-                            return _buildSavedCard(savedProperties[index]);
+                            return _buildSavedCard(filteredProperties[index]);
                           },
                         ),
                       ),
@@ -335,7 +380,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                   // TAGS
                   Row(
                     children: [
-                      _buildTagGrey(p.listingType == "sell" ? "Jual" : "Sewa"),
+                      _buildTagGrey(getListingLabel(p.listingType)),
                       const SizedBox(width: 6),
                       _buildTagBlue(p.propertyType),
                     ],

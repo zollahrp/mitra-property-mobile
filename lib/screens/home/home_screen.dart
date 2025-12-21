@@ -561,6 +561,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  //Based on Views
+  List<PropertyModel> getRecommendedProperties() {
+    final List<PropertyModel> sorted = List.from(properties);
+
+    // SORT DESCENDING BY VIEWS
+    sorted.sort((a, b) {
+      final viewsA = a.views ?? 0;
+      final viewsB = b.views ?? 0;
+      return viewsB.compareTo(viewsA);
+    });
+
+    // MAX 10 ITEM
+    return sorted.take(10).toList();
+  }
+
+  // Based on Clicks
+  // List<PropertyModel> getRecommendedProperties() {
+  //   final List<PropertyModel> sorted = List.from(properties);
+
+  //   // SORT DESCENDING BY CLICKS
+  //   sorted.sort((a, b) {
+  //     final clicksA = a.clicks ?? 0;
+  //     final clicksB = b.clicks ?? 0;
+  //     return clicksB.compareTo(clicksA);
+  //   });
+
+  //   // MAX 10 ITEM
+  //   return sorted.take(10).toList();
+  // }
+
   void applyFilters(Map<String, dynamic> data) {
     setState(() {
       activeFilters = data;
@@ -849,6 +879,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: TextField(
                                   controller: searchCtrl,
+                                  textAlignVertical: TextAlignVertical.center,
                                   onChanged: (value) {
                                     if (value.isEmpty) {
                                       setState(() {
@@ -1311,6 +1342,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPropertyList() {
+    final recommended = getRecommendedProperties();
     return SizedBox(
       height: 365,
       child: isLoading
@@ -1339,9 +1371,9 @@ class _HomeScreenState extends State<HomeScreen> {
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 7),
               scrollDirection: Axis.horizontal,
-              itemCount: properties.length,
+              itemCount: recommended.length,
               itemBuilder: (context, index) {
-                final p = properties[index];
+                final p = recommended[index];
                 final isSaved = savedIds.contains(p.id);
                 // final isSaving = savedIds.contains(p.id);
 

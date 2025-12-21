@@ -923,6 +923,30 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
 
+          const SizedBox(height: 10),
+
+          // ===== STATS =====
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _miniStat(
+                Icons.confirmation_number_outlined,
+                "Kode",
+                property.kode,
+              ),
+              _miniStat(
+                Icons.visibility_outlined,
+                "Views",
+                property.views.toString(),
+              ),
+              _miniStat(
+                Icons.ads_click_outlined,
+                "Clicks",
+                property.clicks.toString(),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 20),
 
           // ===== TYPE - FURNISH - CERTIFICATE =====
@@ -1246,6 +1270,21 @@ Mohon informasi lebih lanjut terkait simulasi cicilan.
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+
+  Widget _miniStat(IconData icon, String label, String value) {
+    return Column(
+      children: [
+        Icon(icon, size: 18, color: Colors.grey),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+      ],
     );
   }
 }
