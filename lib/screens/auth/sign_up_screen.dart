@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mitra_property/screens/auth/sign_in_screen.dart';
 
 final TextEditingController namaC = TextEditingController();
@@ -8,9 +10,40 @@ final TextEditingController emailC = TextEditingController();
 final TextEditingController usernameC = TextEditingController();
 final TextEditingController passC = TextEditingController();
 final TextEditingController confirmPassC = TextEditingController();
+bool _isLoading = false;
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+    }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,23 +101,27 @@ class SignUpScreen extends StatelessWidget {
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 45,
-                          backgroundColor: Color(0xFFFFE066),
-                          backgroundImage: AssetImage(
-                            'assets/images/avatar.png',
-                          ),
+                          backgroundColor: const Color(0xFFFFE066),
+                          backgroundImage: _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : const AssetImage('assets/images/avatar.png')
+                                    as ImageProvider,
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Color(0xFF4A6CF7),
-                            size: 20,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Color(0xFF4A6CF7),
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],
@@ -93,7 +130,7 @@ class SignUpScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     const Text(
-                      'Create an Account',
+                      'Buat Akun',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -104,7 +141,7 @@ class SignUpScreen extends StatelessWidget {
 
                     // Full Name
                     _inputField(
-                      hint: "Full Name",
+                      hint: "Nama Lengkap",
                       icon: Icons.person_outline,
                       controller: namaC,
                     ),
@@ -150,7 +187,7 @@ class SignUpScreen extends StatelessWidget {
 
                     // Confirm Password
                     _inputField(
-                      hint: "Confirm Password",
+                      hint: "Konfirmasi Password",
                       icon: Icons.lock_outline,
                       isPassword: true,
                       controller: confirmPassC,
@@ -159,7 +196,7 @@ class SignUpScreen extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     const Text(
-                      'By creating an account, you agree to our\nTerms of Service and Privacy Policy.',
+                      'Dengan membuat akun, Anda menyetujui\nSyarat Layanan dan Kebijakan Privasi kami.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey,
@@ -174,13 +211,19 @@ class SignUpScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (passC.text != confirmPassC.text) {
-                            print("Password tidak sama");
-                            return;
-                          }
-                          registerUser(context);
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                if (passC.text != confirmPassC.text) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Password tidak sama"),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                registerUser(context);
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4A6CF7),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -188,14 +231,25 @@ class SignUpScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: const Text(
-                          'Register',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'Register',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ],
@@ -209,6 +263,10 @@ class SignUpScreen extends StatelessWidget {
   }
 
   Future<void> registerUser(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final dio = Dio(
         BaseOptions(
@@ -231,36 +289,35 @@ class SignUpScreen extends StatelessWidget {
         data: data,
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // ✅ POPUP
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("Berhasil"),
-            content: const Text("Akun berhasil dibuat. Silakan login."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // tutup dialog
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SignInScreen()),
-                  );
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          ),
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSnack("Registrasi berhasil, tunggu hingga masuk ke laman login.");
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const SignInScreen()),
         );
       } else {
+        // ❌ gagal dari backend
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response.data['message'] ?? 'Register gagal')),
         );
       }
     } catch (e) {
+      // ❌ error jaringan / exception
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      // 🔄 matikan loading apapun hasilnya
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

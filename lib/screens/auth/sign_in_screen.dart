@@ -7,8 +7,27 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 final TextEditingController loginEmailC = TextEditingController();
 final TextEditingController loginPassC = TextEditingController();
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  bool _isLoading = false;
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +66,9 @@ class SignInScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Illustration
               Image.asset(
                 'assets/images/signin_illustration.png',
                 width: 240,
-                fit: BoxFit.contain,
               ),
 
               const SizedBox(height: 28),
@@ -63,17 +80,14 @@ class SignInScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              // Email
               _inputField(
                 hint: "Email / Username",
                 icon: Icons.email_outlined,
                 controller: loginEmailC,
               ),
 
-              // Password with toggle eye
               PasswordField(controller: loginPassC),
 
-              // Forgot password
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -90,15 +104,13 @@ class SignInScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 2),
+              const SizedBox(height: 6),
 
-              // Sign In Button (OVAL)
+              // 🔥 LOGIN BUTTON + LOADING
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    loginUser(context);
-                  },
+                  onPressed: _isLoading ? null : loginUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A6CF7),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -106,18 +118,25 @@ class SignInScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
-
-              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -125,19 +144,25 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Future<void> loginUser(BuildContext context) async {
+  // ===========================================================
+  //                        LOGIN USER
+  // ===========================================================
+
+  Future<void> loginUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final dio = Dio();
 
-      final data = {"username": loginEmailC.text, "password": loginPassC.text};
-
       final response = await dio.post(
         "https://api.mitrapropertysentul.com/auth/login",
-        data: data,
+        data: {
+          "username": loginEmailC.text,
+          "password": loginPassC.text,
+        },
       );
-
-      print("STATUS: ${response.statusCode}");
-      print("DATA: ${response.data}");
 
       if (response.statusCode == 200) {
         final user = response.data["data"];
@@ -146,10 +171,8 @@ class SignInScreen extends StatelessWidget {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", token);
 
-        Map<String, dynamic> decoded = JwtDecoder.decode(token);
-        String userId = decoded["id"];
-
-        await prefs.setString("id", userId);
+        final decoded = JwtDecoder.decode(token);
+        await prefs.setString("id", decoded["id"]);
 
         await prefs.setString("nama", user["nama"] ?? "");
         await prefs.setString("email", user["email"] ?? "");
@@ -157,22 +180,33 @@ class SignInScreen extends StatelessWidget {
         await prefs.setString("alamat", user["alamat"] ?? "");
         await prefs.setString("role", response.data["role"] ?? "");
 
+        _showSnack("Login berhasil, tunggu sebentar...");
 
-        Navigator.pushNamed(context, AppRoutes.home);
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.home,
+          (route) => false,
+        );
+      } else {
+        _showSnack("Login gagal, cek kembali akun Anda");
       }
     } catch (e) {
-      print("LOGIN ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login gagal, cek kembali username/password"),
-        ),
-      );
+      _showSnack("Login gagal, cek kembali username/password");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 }
 
 // ===========================================================
-//                   INPUT FIELD DEFAULT
+//                   INPUT FIELD
 // ===========================================================
 
 Widget _inputField({
@@ -204,7 +238,7 @@ Widget _inputField({
 }
 
 // ===========================================================
-//                   PASSWORD FIELD (TOGGLE)
+//                   PASSWORD FIELD
 // ===========================================================
 
 class PasswordField extends StatefulWidget {
@@ -221,35 +255,33 @@ class _PasswordFieldState extends State<PasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade300, width: 1.3),
-        ),
-        child: TextField(
-          controller: widget.controller,
-          obscureText: isHidden,
-          decoration: InputDecoration(
-            hintText: "Password",
-            border: InputBorder.none,
-            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade500),
-            suffixIcon: IconButton(
-              icon: Icon(
-                isHidden ? Icons.visibility_off : Icons.visibility,
-                color: Colors.grey.shade500,
-              ),
-              onPressed: () {
-                setState(() {
-                  isHidden = !isHidden;
-                });
-              },
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300, width: 1.3),
+      ),
+      child: TextField(
+        controller: widget.controller,
+        obscureText: isHidden,
+        decoration: InputDecoration(
+          hintText: "Password",
+          border: InputBorder.none,
+          prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade500),
+          suffixIcon: IconButton(
+            icon: Icon(
+              isHidden ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey.shade500,
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+            onPressed: () {
+              setState(() {
+                isHidden = !isHidden;
+              });
+            },
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
           ),
         ),
       ),

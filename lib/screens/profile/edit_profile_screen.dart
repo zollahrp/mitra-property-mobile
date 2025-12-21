@@ -14,6 +14,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final emailC = TextEditingController();
   final usernameC = TextEditingController();
   final alamatC = TextEditingController();
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,12 +34,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> updateProfile() async {
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       final dio = Dio();
-
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
-
       final userId = prefs.getString("id");
 
       if (userId == null || userId.isEmpty) {
@@ -51,9 +57,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         "alamat": alamatC.text,
       };
 
-      // ========================
-      //   ENDPOINT YANG BENAR
-      // ========================
       final response = await dio.put(
         "https://api.mitrapropertysentul.com/users/$userId",
         data: data,
@@ -65,26 +68,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       );
 
-      print("UPDATE STATUS: ${response.statusCode}");
-      print("UPDATE DATA: ${response.data}");
-
       if (response.statusCode == 200) {
         await prefs.setString("nama", namaC.text);
         await prefs.setString("email", emailC.text);
         await prefs.setString("username", usernameC.text);
         await prefs.setString("alamat", alamatC.text);
 
-        Navigator.pop(context, true); // kirim sinyal berhasil
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil berhasil diperbarui")),
-        );
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
-      print("UPDATE ERROR: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Gagal update profil")));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Gagal update profil")));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -225,35 +230,80 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 30),
 
               // ===========================
-              // SAVE BUTTON
+              // SAVE & CANCEL BUTTONS
               // ===========================
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      updateProfile();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4A6CF7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                child: Row(
+                  children: [
+                    // Tombol Batal (kecil)
+                    SizedBox(
+                      height: 55,
+                      width: 120, // lebarnya kecil tetap
+                      child: OutlinedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Color(0xFF4A6CF7),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          "Batal",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4A6CF7),
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      "Simpan Perubahan",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+
+                    const SizedBox(width: 12),
+
+                    // Tombol Simpan (ambil sisa space)
+                    Expanded(
+                      child: SizedBox(
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : updateProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A6CF7),
+                            disabledBackgroundColor: const Color(0xFF4A6CF7),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  "Simpan Perubahan",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-
               const SizedBox(height: 30),
             ],
           ),
