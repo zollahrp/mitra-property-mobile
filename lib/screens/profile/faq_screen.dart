@@ -13,28 +13,31 @@ class _FAQScreenState extends State<FAQScreen> {
 
   final List<Map<String, String>> faqs = [
     {
-      "q": "What is Lorem Ipsum?",
+      "q": "Apa itu aplikasi Mitra Property?",
       "a":
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+          "Mitra Property adalah aplikasi web dan mobile yang digunakan untuk jual, beli, dan sewa properti seperti rumah, apartemen, dan tanah. Aplikasi ini bisa digunakan oleh agen properti maupun masyarakat umum yang ingin mencari atau memasarkan properti dengan lebih mudah.",
     },
     {
-      "q": "Why do we use it?",
+      "q":
+          "Apakah masyarakat umum bisa menjual atau menyewakan properti di Mitra Property?",
       "a":
-          "It is a long established fact that a reader will be distracted by the readable content."
+          "Ya, bisa. Mitra Property terbuka untuk semua orang. Pengguna umum dapat langsung memasang iklan properti mereka sendiri tanpa harus menjadi agen atau mitra resmi.",
     },
     {
-      "q": "Where does it come from?",
+      "q": "Jenis properti apa saja yang bisa dipasang di Mitra Property?",
       "a":
-          "Contrary to popular belief, Lorem Ipsum is not simply random text."
+          "Berbagai jenis properti dapat dipasang di Mitra Property, seperti rumah, apartemen, tanah, maupun properti komersial lainnya, baik untuk dijual maupun disewakan.",
     },
     {
-      "q": "Where can I get some?",
+      "q":
+          "Apakah Mitra Property hanya untuk jual beli atau juga melayani sewa?",
       "a":
-          "There are many variations of passages of Lorem Ipsum available."
+          "Mitra Property melayani dua-duanya, yaitu jual dan sewa properti. Pengguna dapat dengan mudah mencari properti sesuai kebutuhan melalui fitur pencarian dan filter yang tersedia.",
     },
     {
-      "q": "Is Lorem Ipsum safe to use?",
-      "a": "Yes, it has been the industry's standard dummy text for centuries."
+      "q": "Bagaimana cara menghubungi pemilik atau penjual properti?",
+      "a":
+          "Setiap iklan properti sudah dilengkapi dengan informasi kontak pemilik atau penjual. Pengguna bisa langsung menghubungi mereka melalui fitur kontak yang tersedia di aplikasi.",
     },
   ];
 
@@ -66,15 +69,22 @@ class _FAQScreenState extends State<FAQScreen> {
               // ==== BACK BUTTON ====
               Align(
                 alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4A6CF7),
-                      shape: BoxShape.circle,
+                child: Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  elevation: 4,
+                  shadowColor: Colors.black.withOpacity(0.15),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => Navigator.pop(context),
+                    child: const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: Color(0xFF4A6CF7),
+                      ),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ),
               ),
@@ -107,7 +117,9 @@ class _FAQScreenState extends State<FAQScreen> {
                     curve: Curves.easeOut,
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
@@ -126,15 +138,20 @@ class _FAQScreenState extends State<FAQScreen> {
                         GestureDetector(
                           onTap: () => _onExpand(index),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                faqs[index]["q"]!,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
+                              Expanded(
+                                child: Text(
+                                  faqs[index]["q"]!,
+                                  maxLines: 3, // biar aman di layar kecil
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               AnimatedRotation(
                                 turns: isOpen ? 0.5 : 0,
                                 duration: const Duration(milliseconds: 250),
@@ -143,7 +160,7 @@ class _FAQScreenState extends State<FAQScreen> {
                                   size: 26,
                                   color: Colors.black87,
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -166,7 +183,7 @@ class _FAQScreenState extends State<FAQScreen> {
                               ? CrossFadeState.showSecond
                               : CrossFadeState.showFirst,
                           duration: const Duration(milliseconds: 250),
-                        )
+                        ),
                       ],
                     ),
                   );

@@ -21,12 +21,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String token = "";
   String? photoUrl;
   bool isLoadingPhoto = true;
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
     super.initState();
     initProfile();
     loadUserPhoto();
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 
   Future<void> initProfile() async {
@@ -69,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final data = jsonDecode(response.body);
 
         setState(() {
-          photoUrl = data["photo"]; 
+          photoUrl = data["photo"];
           isLoadingPhoto = false;
         });
       } else {
@@ -251,36 +264,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // hapus semua data user + token
+                  onPressed: _isLoggingOut
+                      ? null
+                      : () async {
+                          setState(() {
+                            _isLoggingOut = true;
+                          });
 
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignInScreen()),
-                    );
-                  },
+                          await Future.delayed(const Duration(seconds: 2));
+
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
+
+                          if (!mounted) return;
+
+                          _showSnack("Berhasil logout");
+
+                          await Future.delayed(
+                            const Duration(milliseconds: 800),
+                          );
+
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignInScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A6CF7),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        "Logout",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                  child: _isLoggingOut
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.logout, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              "Logout",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),
