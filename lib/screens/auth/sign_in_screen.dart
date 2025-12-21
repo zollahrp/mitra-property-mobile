@@ -66,10 +66,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
               const SizedBox(height: 20),
 
-              Image.asset(
-                'assets/images/signin_illustration.png',
-                width: 240,
-              ),
+              Image.asset('assets/images/signin_illustration.png', width: 240),
 
               const SizedBox(height: 28),
 
@@ -88,20 +85,34 @@ class _SignInScreenState extends State<SignInScreen> {
 
               PasswordField(controller: loginPassC),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.forgotPassword);
-                  },
-                  child: const Text(
-                    "Lupa Password?",
-                    style: TextStyle(
-                      color: Color(0xFF4A6CF7),
-                      fontWeight: FontWeight.w500,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.signUp);
+                    },
+                    child: const Text(
+                      "Belum ada akun?",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.forgotPassword);
+                    },
+                    child: const Text(
+                      "Lupa Password?",
+                      style: TextStyle(
+                        color: Color(0xFF4A6CF7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 6),
@@ -158,10 +169,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
       final response = await dio.post(
         "https://api.mitrapropertysentul.com/auth/login",
-        data: {
-          "username": loginEmailC.text,
-          "password": loginPassC.text,
-        },
+        data: {"username": loginEmailC.text, "password": loginPassC.text},
       );
 
       if (response.statusCode == 200) {

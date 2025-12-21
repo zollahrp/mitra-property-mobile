@@ -1,8 +1,36 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_routes.dart';
 
-class LoginChoiceScreen extends StatelessWidget {
+class LoginChoiceScreen extends StatefulWidget {
   const LoginChoiceScreen({super.key});
+
+  @override
+  State<LoginChoiceScreen> createState() => _LoginChoiceScreenState();
+}
+
+class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
+  bool _isLoginLoading = false;
+  bool _isRegisterLoading = false;
+
+  void _goToLogin() async {
+    setState(() => _isLoginLoading = true);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+    Navigator.pushNamed(context, AppRoutes.signIn);
+
+    setState(() => _isLoginLoading = false);
+  }
+
+  void _goToRegister() async {
+    setState(() => _isRegisterLoading = true);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+    Navigator.pushNamed(context, AppRoutes.signUp);
+
+    setState(() => _isRegisterLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,28 +102,35 @@ class LoginChoiceScreen extends StatelessWidget {
                 // ===== LOGIN BUTTON =====
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.signIn);
-                    },
+                    onPressed:
+                        (_isLoginLoading || _isRegisterLoading) ? null : _goToLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5067EB),
-                      elevation: 6,
-                      shadowColor: const Color(0xFF5067EB).withOpacity(0.4),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
+                      elevation: 6,
                     ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.4,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: _isLoginLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.4,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
 
@@ -126,29 +161,37 @@ class LoginChoiceScreen extends StatelessWidget {
                 // ===== REGISTER BUTTON =====
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
                   child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.signUp);
-                    },
+                    onPressed:
+                        (_isLoginLoading || _isRegisterLoading) ? null : _goToRegister,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
                         color: Color(0xFF5067EB),
                         width: 1.6,
                       ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
-                    child: const Text(
-                      'Buat Akun',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.4,
-                        color: Color(0xFF5067EB),
-                      ),
-                    ),
+                    child: _isRegisterLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Color(0xFF5067EB),
+                            ),
+                          )
+                        : const Text(
+                            'Buat Akun',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.4,
+                              color: Color(0xFF5067EB),
+                            ),
+                          ),
                   ),
                 ),
 

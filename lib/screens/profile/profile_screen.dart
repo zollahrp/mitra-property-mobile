@@ -288,13 +288,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // =========================
-            // LOGOUT BUTTON
+            // LOGOUT BUTTON (ROUNDED)
             // =========================
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
               child: SizedBox(
                 width: double.infinity,
-                height: 55,
                 child: ElevatedButton(
                   onPressed: _isLoggingOut
                       ? null
@@ -326,19 +325,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A6CF7),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(
+                        30,
+                      ), // 🔥 SAMA PERSIS LOGIN
                     ),
                   ),
                   child: _isLoggingOut
                       ? const SizedBox(
-                          width: 22,
                           height: 22,
+                          width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                            color: Colors.white,
                           ),
                         )
                       : const Row(
@@ -349,9 +349,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               "Logout",
                               style: TextStyle(
-                                color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                             ),
                           ],

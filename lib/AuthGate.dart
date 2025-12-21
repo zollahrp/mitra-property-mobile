@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:mitra_property/screens/auth/sign_in_screen.dart';
+import 'package:mitra_property/screens/auth/login_choice_screen.dart';
 import 'package:mitra_property/screens/navbar/bottom_navbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,8 +12,6 @@ class AuthGate extends StatelessWidget {
     final token = prefs.getString("token");
 
     if (token == null || token.isEmpty) return false;
-
-    // token ada tapi expired → dianggap logout
     return !JwtDecoder.isExpired(token);
   }
 
@@ -22,20 +20,19 @@ class AuthGate extends StatelessWidget {
     return FutureBuilder<bool>(
       future: _isLoggedIn(),
       builder: (context, snapshot) {
-        // loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // logged in
+        // ✅ SUDAH LOGIN
         if (snapshot.data == true) {
           return const BottomNavbar();
         }
 
-        // not logged in
-        return const SignInScreen();
+        // ✅ BELUM LOGIN → LOGIN CHOICE
+        return const LoginChoiceScreen();
       },
     );
   }
