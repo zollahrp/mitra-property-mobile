@@ -16,6 +16,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mitra_property/utils/property_helper.dart';
 
 enum BookmarkState { idle, loading }
 
@@ -1019,11 +1020,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         spacing: 6,
                                         runSpacing: 6,
                                         children: [
-                                          _buildTagGrey(
-                                            (p.listingType ?? "") == "sell"
-                                                ? "Jual"
-                                                : "Sewa",
-                                          ),
+                                          _buildTagGrey(getListingLabel(p.listingType)),
                                           _buildTagBlue(
                                             shortenType(p.propertyType ?? ""),
                                           ),
@@ -1197,11 +1194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               // TAGS
                               Row(
                                 children: [
-                                  _buildTagGrey(
-                                    (p.listingType ?? "") == "sell"
-                                        ? "Jual"
-                                        : "Sewa",
-                                  ),
+                                  _buildTagGrey(getListingLabel(p.listingType)),
                                   const SizedBox(width: 6),
                                   _buildTagBlue(
                                     shortenType(p.propertyType ?? ""),
