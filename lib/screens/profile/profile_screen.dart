@@ -15,11 +15,52 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String nama = "";
   String email = "";
+  String userId = "";
+  String token = "";
+  String? photoUrl;
+  bool isLoadingPhoto = true;
 
   @override
   void initState() {
     super.initState();
-    loadUserData();
+    initProfile();
+  }
+
+  Future<void> initProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final storedUserId = prefs.getString("id");
+    final storedToken = prefs.getString("token");
+
+    if (storedUserId == null || storedToken == null) return;
+
+    setState(() {
+      nama = prefs.getString("nama") ?? "User";
+      email = prefs.getString("email") ?? "user@example.com";
+      userId = storedUserId;
+      token = storedToken;
+
+      photoUrl =
+          "https://api.mitrapropertysentul.com/users/photo/$storedUserId";
+      isLoadingPhoto = false;
+    });
+  }
+
+  Future<void> loadUserPhoto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString("id");
+      final token = prefs.getString("token");
+
+      if (userId == null || token == null) return;
+
+      setState(() {
+        photoUrl = "https://api.mitrapropertysentul.com/users/photo/$userId";
+        isLoadingPhoto = false;
+      });
+    } catch (e) {
+      isLoadingPhoto = false;
+    }
   }
 
   Future<void> loadUserData() async {
@@ -28,6 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       nama = prefs.getString("nama") ?? "User";
       email = prefs.getString("email") ?? "user@example.com";
+      userId = prefs.getString("id") ?? "";
+      token = prefs.getString("token") ?? "";
     });
   }
 
@@ -97,9 +140,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 55,
                       backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: AssetImage("assets/images/avatar.png"),
+                      child: ClipOval(
+                        child: isLoadingPhoto
+                            ? const CircularProgressIndicator()
+                            : Image.network(
+                                photoUrl!,
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                                headers: {"Authorization": "Bearer $token"},
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    "assets/images/avatar.png",
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
                       ),
                     ),
                   ),
