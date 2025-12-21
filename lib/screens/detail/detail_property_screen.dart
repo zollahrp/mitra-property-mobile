@@ -377,24 +377,25 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    _infoItem("Land Area", "${widget.property.luasTanah} m²"),
+                    _infoItem("Luas Tanah", "${widget.property.luasTanah} m²"),
                     _infoItem(
-                      "Building Area",
+                      "Luas Bangunan",
                       "${widget.property.luasBangunan} m²",
                     ),
-                    _infoItem("Bedrooms", "${widget.property.kamarTidur}"),
-                    _infoItem("Bathrooms", "${widget.property.kamarMandi}"),
-                    _infoItem("Kitchen", "${widget.property.dapur}"),
-                    _infoItem("Garage", "${widget.property.garasi}"),
+                    _infoItem("Kamar Tidur", "${widget.property.kamarTidur}"),
+                    _infoItem("Kamar Mandi", "${widget.property.kamarMandi}"),
+                    _infoItem("Dapur", "${widget.property.dapur}"),
+                    _infoItem("Garasi", "${widget.property.garasi}"),
                     _infoItem("Carport", "${widget.property.carport}"),
-                    _infoItem("Electricity", widget.property.listrik),
-                    _infoItem("Water", widget.property.air),
-                    _infoItem("Direction", widget.property.hadap),
-                    _infoItem("Certificate", widget.property.sertifikat),
-                    _infoItem("Furnish", widget.property.furnish),
+                    _infoItem("Listrik", widget.property.listrik),
+                    _infoItem("Air", widget.property.air),
+                    _infoItem("Arah Bangunan", widget.property.hadap),
+                    _infoItem("Sertifikat", widget.property.sertifikat),
+                    _infoItem("Kondisi Furnitur", widget.property.furnish),
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
 
               Padding(
