@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mitra_property/models/property_model.dart';
@@ -121,6 +123,9 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   int currentIndex = 0;
   int visibleWordCount = 100;
 
+  late final PageController _pageController;
+  Timer? _autoSlideTimer;
+
   // List gambar dari assets
   // final List<String> images = [
   //   'assets/images/house.png',
@@ -148,8 +153,35 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
+
+    _startAutoSlide();
     loadProperties();
     loadSavedProperties();
+  }
+
+  void _startAutoSlide() {
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
+      if (!mounted) return;
+
+      final total = widget.property.foto.length;
+      if (total <= 1) return;
+
+      final nextPage = (currentIndex + 1) % total;
+
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> loadSavedProperties() async {
@@ -677,8 +709,11 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
           height: 320,
           width: double.infinity,
           child: PageView.builder(
+            controller: _pageController,
             itemCount: photos.length,
-            onPageChanged: (i) => setState(() => currentIndex = i),
+            onPageChanged: (i) {
+              setState(() => currentIndex = i);
+            },
             itemBuilder: (context, index) {
               return Image.network(
                 photos[index].photoUrl,
@@ -748,7 +783,14 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                 }
 
                 return GestureDetector(
-                  onTap: () => setState(() => currentIndex = index),
+                  onTap: () {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                    setState(() => currentIndex = index);
+                  },
                   child: Container(
                     width: 60,
                     margin: const EdgeInsets.only(right: 8),

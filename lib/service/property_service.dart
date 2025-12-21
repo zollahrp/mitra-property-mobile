@@ -10,7 +10,8 @@ class PropertyService {
   /// CREATE PROPERTY
   /// =====================================================
   static Future<CreatePropertyResponse?> createProperty(
-      Map<String, dynamic> data) async {
+    Map<String, dynamic> data,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token") ?? "";
 
@@ -45,7 +46,10 @@ class PropertyService {
   /// =====================================================
   /// GET LIST PROPERTY (Paginate)
   /// =====================================================
-  static Future<List<PropertyModel>> getApprovedProperties({int page = 1}) async {
+  /// =====================================================
+  /// GET LIST PROPERTY (Approved Only)
+  /// =====================================================
+  static Future<List<PropertyModel>> getApprovedProperties() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token") ?? "";
 
@@ -54,7 +58,7 @@ class PropertyService {
       return [];
     }
 
-    final url = Uri.parse("$baseUrl/properties?page=$page");
+    final url = Uri.parse("$baseUrl/properties/approved");
 
     final response = await http.get(
       url,
@@ -65,19 +69,25 @@ class PropertyService {
     );
 
     print("STATUS: ${response.statusCode}");
+    print("BODY: ${response.body}");
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
 
-      // backend harus punya key "items"
-      if (!body.containsKey("items")) {
-        print("⚠️ Key 'items' tidak ditemukan!");
-        return [];
+      // ⚠️ cek struktur response backend
+      if (body is List) {
+        // kalau backend langsung return array
+        return body.map((e) => PropertyModel.fromJson(e)).toList();
       }
 
-      final result = PropertyListResponse.fromJson(body);
+      if (body.containsKey("items")) {
+        // kalau masih pakai pagination
+        final result = PropertyListResponse.fromJson(body);
+        return result.items;
+      }
 
-      return result.items;
+      print("⚠️ Format response tidak dikenali");
+      return [];
     } else {
       print("❌ Error: ${response.statusCode} → ${response.body}");
       return [];
