@@ -153,6 +153,38 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentBanner = 0;
   Timer? _bannerTimer;
 
+  String formatTanggalIndo(DateTime date) {
+    const hari = [
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+      "Minggu",
+    ];
+
+    const bulan = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ];
+
+    final namaHari = hari[date.weekday - 1]; // weekday: 1-7
+    final namaBulan = bulan[date.month - 1]; // month: 1-12
+
+    return "$namaHari, ${date.day} $namaBulan ${date.year}";
+  }
+
   String getYoutubeId(String url) {
     try {
       // Hilangkan whitespace, dll
@@ -201,6 +233,25 @@ class _HomeScreenState extends State<HomeScreen> {
     loadSavedIds();
     _loadBanners();
     loadUserPhoto();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      isLoading = true;
+      isLoadingBanner = true;
+      isLoadingVideos = true;
+      isLoadingPhoto = true;
+    });
+
+    await Future.wait([
+      loadProperties(),
+      loadSaved(),
+      loadSavedIds(),
+      fetchVideos(),
+      _loadBanners(),
+      loadUserPhoto(),
+      loadUsername(),
+    ]);
   }
 
   Future<void> loadUserPhoto() async {
@@ -599,186 +650,151 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ==== HEADER + SEARCH WRAPPER ====
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 32, 16, 30),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4A6CF7), Color(0xFF6C8CFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(26),
-                    bottomRight: Radius.circular(26),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(), // 🔥 WAJIB
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ==== HEADER + SEARCH WRAPPER ====
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 32, 16, 30),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4A6CF7), Color(0xFF6C8CFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ========== AVATAR + GREETING ==========
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            shape: BoxShape.circle,
-                          ),
-                          child: CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.white,
-                            child: ClipOval(
-                              child: ClipOval(
-                                child: isLoadingPhoto
-                                    ? const SizedBox(
-                                        width: 46,
-                                        height: 46,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : Image.network(
-                                        photoUrl ?? "",
-                                        width: 46,
-                                        height: 46,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Image.asset(
-                                                'assets/images/avatar.png',
-                                                width: 46,
-                                                height: 46,
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Hello, $username',
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-
-                            const SizedBox(height: 3),
-
-                            Text(
-                              DateFormat(
-                                'EEEE, d MMMM yyyy',
-                              ).format(DateTime.now()),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white.withOpacity(0.85),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(26),
+                      bottomRight: Radius.circular(26),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // ========== DROPDOWN + SEARCH ==========
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            final result = await showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.white,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(24),
-                                ),
-                              ),
-                              builder: (_) => const FilterModal(),
-                            );
-
-                            if (result != null) {
-                              if (result["reset"] == true) {
-                                setState(() {
-                                  activeFilters = {}; // kosongkan filter
-                                  properties = List.from(
-                                    allProperties,
-                                  ); // tampilkan semua data
-                                });
-                              } else {
-                                applyFilters(result);
-                              }
-                            }
-                          },
-                          child: Container(
-                            height: 48, // << SAMAIN DENGAN SEARCH BAR
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.25),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ========== AVATAR + GREETING ==========
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(
-                                14,
-                              ), // << SAMAIN JUGA
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                              color: Colors.white.withOpacity(0.25),
+                              shape: BoxShape.circle,
                             ),
-                            child: Row(
-                              children: const [
-                                Text(
-                                  "Filter",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF4A6CF7),
-                                    fontWeight: FontWeight.w600,
+                            child: CircleAvatar(
+                              radius: 26,
+                              backgroundColor: Colors.white,
+                              child: ClipOval(
+                                child: ClipOval(
+                                  child: isLoadingPhoto
+                                      ? const SizedBox(
+                                          width: 46,
+                                          height: 46,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Image.network(
+                                          photoUrl ?? "",
+                                          width: 46,
+                                          height: 46,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Image.asset(
+                                                  'assets/images/avatar.png',
+                                                  width: 46,
+                                                  height: 46,
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hello, $username',
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+
+                              const SizedBox(height: 3),
+
+                              Text(
+                                formatTanggalIndo(DateTime.now()),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ========== DROPDOWN + SEARCH ==========
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              final result = await showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.white,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(24),
                                   ),
                                 ),
-                                SizedBox(width: 6),
-                                Icon(Icons.tune, color: Color(0xFF4A6CF7)),
-                              ],
-                            ),
-                          ),
-                        ),
+                                builder: (_) => const FilterModal(),
+                              );
 
-                        const SizedBox(width: 12),
-
-                        // SEARCH BAR CARD
-                        Expanded(
-                          child: SizedBox(
-                            height: 48,
+                              if (result != null) {
+                                if (result["reset"] == true) {
+                                  setState(() {
+                                    activeFilters = {}; // kosongkan filter
+                                    properties = List.from(
+                                      allProperties,
+                                    ); // tampilkan semua data
+                                  });
+                                } else {
+                                  applyFilters(result);
+                                }
+                              }
+                            },
                             child: Container(
+                              height: 48, // << SAMAIN DENGAN SEARCH BAR
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(
+                                  14,
+                                ), // << SAMAIN JUGA
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.08),
@@ -787,349 +803,390 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
-                              child: TextField(
-                                controller: searchCtrl,
-                                onChanged: (value) {
-                                  if (value.isEmpty) {
-                                    setState(() {
-                                      properties = List.from(allProperties);
-                                    });
-                                  } else {
-                                    searchProperties(value);
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'Cari Property...',
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 14,
+                              child: Row(
+                                children: const [
+                                  Text(
+                                    "Filter",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Color(0xFF4A6CF7),
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                  prefixIcon: Icon(
-                                    Icons.search_rounded,
-                                    color: Colors.grey.shade600,
-                                    size: 22,
+                                  SizedBox(width: 6),
+                                  Icon(Icons.tune, color: Color(0xFF4A6CF7)),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          // SEARCH BAR CARD
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: TextField(
+                                  controller: searchCtrl,
+                                  onChanged: (value) {
+                                    if (value.isEmpty) {
+                                      setState(() {
+                                        properties = List.from(allProperties);
+                                      });
+                                    } else {
+                                      searchProperties(value);
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: 'Cari Property...',
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 14,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.search_rounded,
+                                      color: Colors.grey.shade600,
+                                      size: 22,
+                                    ),
+                                    border: InputBorder.none,
                                   ),
-                                  border: InputBorder.none,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // ==== Banner Promo ====
-              SizedBox(
-                height: 180,
-                child: isLoadingBanner
-                    ? const Center(child: CircularProgressIndicator())
-                    : banners.isEmpty
-                    ? Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Text(
-                          "Banner belum tersedia",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    : PageView.builder(
-                        controller: _bannerController,
+                // ==== Banner Promo ====
+                SizedBox(
+                  height: 180,
+                  child: isLoadingBanner
+                      ? const Center(child: CircularProgressIndicator())
+                      : banners.isEmpty
+                      ? Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Text(
+                            "Banner belum tersedia",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : PageView.builder(
+                          controller: _bannerController,
 
-                        itemCount: banners.length,
-                        itemBuilder: (context, index) {
-                          final banner = banners[index];
+                          itemCount: banners.length,
+                          itemBuilder: (context, index) {
+                            final banner = banners[index];
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                banner.imageUrl,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-
-                                // 🔄 loading image
-                                loadingBuilder: (c, child, p) {
-                                  if (p == null) return child;
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
-
-                                // ❌ error image
-                                errorBuilder: (c, e, s) {
-                                  return Container(
-                                    color: Colors.grey.shade300,
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.broken_image,
-                                      size: 40,
-                                    ),
-                                  );
-                                },
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
                               ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ==== Rekomendasi Untukmu ====
-              const Text(
-                'Rekomendasi Untukmu',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              _buildPropertyList(),
-
-              const SizedBox(height: 30),
-
-              // ==== Video Singkat Property ====
-              const Text(
-                'Video Singkat Property',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-
-              SizedBox(
-                height: MediaQuery.of(context).size.width * 0.65,
-                child: isLoadingVideos
-                    ? const Center(child: CircularProgressIndicator())
-                    : videos.isEmpty
-                    ? const Center(child: Text("Tidak ada video"))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: videos.length,
-                        itemBuilder: (context, index) {
-                          final vid = videos[index];
-
-                          return GestureDetector(
-                            onTap: () {
-                              final fixedUrl = fixYoutubeUrl(vid.link);
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      VideoPlayerScreen(youtubeUrl: fixedUrl),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 160,
-                              margin: const EdgeInsets.only(right: 16),
-                              decoration: BoxDecoration(
+                              child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    getYoutubeThumbnail(vid.link),
-                                  ),
+                                child: Image.network(
+                                  banner.imageUrl,
+                                  width: double.infinity,
                                   fit: BoxFit.cover,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.play_circle_fill,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
 
-              const SizedBox(height: 30),
+                                  // 🔄 loading image
+                                  loadingBuilder: (c, child, p) {
+                                    if (p == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
 
-              // ==== Property ====
-              const Text(
-                'Property',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: properties.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio:
-                            MediaQuery.of(context).size.width /
-                            (MediaQuery.of(context).size.height * 0.85),
-                      ),
-
-                      itemBuilder: (context, index) {
-                        final p = properties[index];
-                        final isSaved = savedIds.contains(p.id);
-
-                        // === FIX harga ===
-                        final harga = int.tryParse(p.harga ?? "0") ?? 0;
-                        final hargaFormat =
-                            "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => DetailPropertyScreen(
-                                  property: p,
-                                  role: role,
+                                  // ❌ error image
+                                  errorBuilder: (c, e, s) {
+                                    return Container(
+                                      color: Colors.grey.shade300,
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        size: 40,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             );
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.07),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // ==== IMAGE + BOOKMARK ====
-                                Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                      ),
-                                      child: _buildPropertyImage(
-                                        p.foto.isNotEmpty
-                                            ? p.foto.first.photoUrl
-                                            : null,
-                                      ),
-                                    ),
+                        ),
+                ),
 
-                                    // ===== BOOKMARK ICON =====
-                                    Positioned(
-                                      top: 10,
-                                      right: 10,
-                                      child: BookmarkButton(
-                                        isSaved: savedIds.contains(p.id),
-                                        onToggle: (wasSaved) async {
-                                          try {
-                                            if (wasSaved) {
-                                              await savedService
-                                                  .removeSavedProperty(p.id);
-                                            } else {
-                                              await savedService.saveProperty(
-                                                p.id,
-                                              );
-                                            }
+                const SizedBox(height: 24),
 
-                                            setState(() {
-                                              if (wasSaved) {
-                                                savedIds.remove(p.id);
-                                              } else {
-                                                savedIds.add(p.id);
-                                              }
-                                            });
+                // ==== Rekomendasi Untukmu ====
+                const Text(
+                  'Rekomendasi Untukmu',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                _buildPropertyList(),
 
-                                            return true;
-                                          } catch (e) {
-                                            return false;
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                const SizedBox(height: 30),
 
-                                // ==== CONTENT ====
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    12,
-                                    10,
-                                    12,
-                                    12,
+                // ==== Video Singkat Property ====
+                const Text(
+                  'Video Singkat Property',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+
+                SizedBox(
+                  height: MediaQuery.of(context).size.width * 0.65,
+                  child: isLoadingVideos
+                      ? const Center(child: CircularProgressIndicator())
+                      : videos.isEmpty
+                      ? const Center(child: Text("Tidak ada video"))
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: videos.length,
+                          itemBuilder: (context, index) {
+                            final vid = videos[index];
+
+                            return GestureDetector(
+                              onTap: () {
+                                final fixedUrl = fixYoutubeUrl(vid.link);
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        VideoPlayerScreen(youtubeUrl: fixedUrl),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                );
+                              },
+                              child: Container(
+                                width: 160,
+                                margin: const EdgeInsets.only(right: 16),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      getYoutubeThumbnail(vid.link),
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.play_circle_fill,
+                                    color: Colors.white,
+                                    size: 50,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // ==== Property ====
+                const Text(
+                  'Property',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+
+                isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: properties.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio:
+                              MediaQuery.of(context).size.width /
+                              (MediaQuery.of(context).size.height * 0.85),
+                        ),
+
+                        itemBuilder: (context, index) {
+                          final p = properties[index];
+                          final isSaved = savedIds.contains(p.id);
+
+                          // === FIX harga ===
+                          final harga = int.tryParse(p.harga ?? "0") ?? 0;
+                          final hargaFormat =
+                              "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => DetailPropertyScreen(
+                                    property: p,
+                                    role: role,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.07),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ==== IMAGE + BOOKMARK ====
+                                  Stack(
                                     children: [
-                                      // TAGS
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 6,
-                                        children: [
-                                          _buildTagGrey(
-                                            getListingLabel(p.listingType),
-                                          ),
-                                          _buildTagBlue(
-                                            shortenType(p.propertyType ?? ""),
-                                          ),
-                                        ],
-                                      ),
-
-                                      const SizedBox(height: 8),
-
-                                      // PRICE
-                                      Text(
-                                        hargaFormat,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF4A6CF7),
+                                      ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
                                         ),
-                                      ),
-                                      const SizedBox(height: 6),
-
-                                      // TITLE (lokasi)
-                                      Text(
-                                        p.lokasi ?? "-",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
+                                        child: _buildPropertyImage(
+                                          p.foto.isNotEmpty
+                                              ? p.foto.first.photoUrl
+                                              : null,
                                         ),
                                       ),
 
-                                      const SizedBox(height: 6),
+                                      // ===== BOOKMARK ICON =====
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: BookmarkButton(
+                                          isSaved: savedIds.contains(p.id),
+                                          onToggle: (wasSaved) async {
+                                            try {
+                                              if (wasSaved) {
+                                                await savedService
+                                                    .removeSavedProperty(p.id);
+                                              } else {
+                                                await savedService.saveProperty(
+                                                  p.id,
+                                                );
+                                              }
 
-                                      // LOCATION
-                                      Text(
-                                        p.lokasi ?? "Lokasi tidak tersedia",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                              setState(() {
+                                                if (wasSaved) {
+                                                  savedIds.remove(p.id);
+                                                } else {
+                                                  savedIds.add(p.id);
+                                                }
+                                              });
+
+                                              return true;
+                                            } catch (e) {
+                                              return false;
+                                            }
+                                          },
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
+
+                                  // ==== CONTENT ====
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      10,
+                                      12,
+                                      12,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // TAGS
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 6,
+                                          children: [
+                                            _buildTagGrey(
+                                              getListingLabel(p.listingType),
+                                            ),
+                                            _buildTagBlue(
+                                              shortenType(p.propertyType ?? ""),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 8),
+
+                                        // PRICE
+                                        Text(
+                                          hargaFormat,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF4A6CF7),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+
+                                        // TITLE (lokasi)
+                                        Text(
+                                          p.lokasi ?? "-",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        // LOCATION
+                                        Text(
+                                          p.lokasi ?? "Lokasi tidak tersedia",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ],
+                          );
+                        },
+                      ),
+              ],
+            ),
           ),
         ),
       ),

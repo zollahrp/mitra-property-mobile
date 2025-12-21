@@ -30,6 +30,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     loadUserPhoto();
   }
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      isLoadingPhoto = true;
+    });
+
+    await loadUserData();
+    await loadUserPhoto();
+
+    await Future.delayed(const Duration(milliseconds: 400));
+  }
+
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -57,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       token = storedToken;
 
       photoUrl =
-          "https://api.mitrapropertysentul.com/users/photo/$storedUserId";
+          "https://api.mitrapropertysentul.com/users/photo/$storedUserId?ts=${DateTime.now().millisecondsSinceEpoch}";
       isLoadingPhoto = false;
     });
   }
@@ -174,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: isLoadingPhoto
                             ? const CircularProgressIndicator()
                             : Image.network(
-                                photoUrl!,
+                                "${photoUrl!}?ts=${DateTime.now().millisecondsSinceEpoch}",
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
@@ -200,58 +211,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // MENU LIST
             // =========================
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  _buildMenuItem(
-                    icon: Icons.person,
-                    iconColor: Colors.grey.shade600,
-                    title: "My Profile",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ShowProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.language,
-                    iconColor: Colors.redAccent,
-                    title: "Website",
-                    onTap: () async {
-                      final url = Uri.parse('http://mitrapropertysentul.com');
-
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(
-                          url,
-                          mode: LaunchMode
-                              .externalApplication, // biar buka browser
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(), // 👈 DI SINI
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildMenuItem(
+                      icon: Icons.person,
+                      iconColor: Colors.grey.shade600,
+                      title: "My Profile",
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ShowProfileScreen(),
+                          ),
                         );
-                      } else {
-                        throw 'Could not launch $url';
-                      }
-                    },
-                  ),
 
-                  _buildMenuItem(
-                    icon: Icons.star,
-                    iconColor: Colors.orange,
-                    title: "Rate Us",
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    iconColor: Colors.teal,
-                    title: "Faq",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const FAQScreen()),
-                      );
-                    },
-                  ),
-                ],
+                        if (result == true) {
+                          await loadUserData();
+                          await loadUserPhoto();
+                        }
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.language,
+                      iconColor: Colors.redAccent,
+                      title: "Website",
+                      onTap: () async {
+                        final url = Uri.parse('http://mitrapropertysentul.com');
+
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(
+                            url,
+                            mode: LaunchMode
+                                .externalApplication, // biar buka browser
+                          );
+                        } else {
+                          throw 'Could not launch $url';
+                        }
+                      },
+                    ),
+
+                    _buildMenuItem(
+                      icon: Icons.star,
+                      iconColor: Colors.orange,
+                      title: "Rate Us",
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.help_outline,
+                      iconColor: Colors.teal,
+                      title: "Faq",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const FAQScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
 

@@ -197,11 +197,6 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
                     if (result == true) {
                       await loadProfileData(); // refresh data
                       await loadUserPhoto();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Profil berhasil diperbarui"),
-                        ),
-                      );
                     }
                   },
 

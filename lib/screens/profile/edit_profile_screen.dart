@@ -30,6 +30,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _loadUserPhoto();
   }
 
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
   Future<void> _loadUserPhoto() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -109,18 +121,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Foto berhasil diupload, klik Simpan Perubahan untuk menyimpan",
-            ),
-          ),
+        _showSnack(
+          "Foto berhasil diupload, klik Simpan Perubahan untuk menyimpan",
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Gagal upload foto")));
+      _showSnack("Gagal upload foto");
     }
   }
 
@@ -176,15 +182,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         await prefs.setString("username", usernameC.text);
         await prefs.setString("alamat", alamatC.text);
 
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
+        if (!mounted) return;
+
+        _showSnack("Profil berhasil diperbarui");
+
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Gagal update profil")));
+        _showSnack("Gagal update profil");
       }
     } finally {
       if (mounted) {
