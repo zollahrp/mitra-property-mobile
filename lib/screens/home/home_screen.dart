@@ -1184,66 +1184,72 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
 
                                   // ==== CONTENT ====
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      10,
-                                      12,
-                                      12,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // TAGS
-                                        Wrap(
-                                          spacing: 6,
-                                          runSpacing: 6,
-                                          children: [
-                                            _buildTagGrey(
-                                              getListingLabel(p.listingType),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        10,
+                                        12,
+                                        12,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // TAGS
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 6,
+                                            children: [
+                                              _buildTagGrey(
+                                                getListingLabel(p.listingType),
+                                              ),
+                                              _buildTagBlue(
+                                                shortenType(
+                                                  p.propertyType ?? "",
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 8),
+
+                                          // PRICE
+                                          Text(
+                                            hargaFormat,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4A6CF7),
                                             ),
-                                            _buildTagBlue(
-                                              shortenType(p.propertyType ?? ""),
+                                          ),
+                                          const SizedBox(height: 6),
+
+                                          // TITLE (lokasi)
+                                          Text(
+                                            p.lokasi ?? "-",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
                                             ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        // PRICE
-                                        Text(
-                                          hargaFormat,
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF4A6CF7),
                                           ),
-                                        ),
-                                        const SizedBox(height: 6),
 
-                                        // TITLE (lokasi)
-                                        Text(
-                                          p.lokasi ?? "-",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
+                                          const SizedBox(height: 6),
+
+                                          // LOCATION
+                                          Text(
+                                            p.lokasi ?? "Lokasi tidak tersedia",
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
                                           ),
-                                        ),
-
-                                        const SizedBox(height: 6),
-
-                                        // LOCATION
-                                        Text(
-                                          p.lokasi ?? "Lokasi tidak tersedia",
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1388,102 +1394,70 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
                         // ==== CONTENT ====
-                        Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // TAGS
-                              Row(
-                                children: [
-                                  _buildTagGrey(getListingLabel(p.listingType)),
-                                  const SizedBox(width: 6),
-                                  _buildTagBlue(
-                                    shortenType(p.propertyType ?? ""),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // PRICE (dinamis)
-                              Text(
-                                hargaFormat,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF4A6CF7),
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              // TITLE (lokasi / nama)
-                              Text(
-                                p.lokasi ?? "-",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              // LOCATION
-                              Text(
-                                p.lokasi ?? "Lokasi tidak tersedia",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              // ==== CALL + WHATSAPP BUTTONS ====
-                              Row(
-                                children: [
-                                  // CALL BUTTON
-                                  Expanded(
-                                    child: Container(
-                                      height: 42,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: const Color(0xFF4A6CF7),
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.phone,
-                                        color: Color(0xFF4A6CF7),
-                                        size: 22,
-                                      ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // TAGS
+                                Row(
+                                  children: [
+                                    _buildTagGrey(
+                                      getListingLabel(p.listingType),
                                     ),
+                                    const SizedBox(width: 6),
+                                    _buildTagBlue(
+                                      shortenType(p.propertyType ?? ""),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // PRICE (dinamis)
+                                Text(
+                                  hargaFormat,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF4A6CF7),
                                   ),
+                                ),
 
-                                  const SizedBox(width: 10),
+                                const SizedBox(height: 4),
 
-                                  // WHATSAPP BUTTON
-                                  Expanded(
-                                    flex: 2,
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        final phone = "62811879603";
-                                        final url = Uri.parse(
-                                          "https://wa.me/$phone",
-                                        );
+                                // TITLE (lokasi / nama)
+                                Text(
+                                  p.lokasi ?? "-",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
 
-                                        if (await canLaunchUrl(url)) {
-                                          await launchUrl(
-                                            url,
-                                            mode:
-                                                LaunchMode.externalApplication,
-                                          );
-                                        }
-                                      },
+                                const SizedBox(height: 4),
+
+                                // LOCATION
+                                Text(
+                                  p.lokasi ?? "Lokasi tidak tersedia",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+
+                                const Spacer(),
+
+                                // ==== CALL + WHATSAPP BUTTONS ====
+                                Row(
+                                  children: [
+                                    // CALL BUTTON
+                                    Expanded(
                                       child: Container(
                                         height: 42,
                                         decoration: BoxDecoration(
@@ -1491,34 +1465,74 @@ class _HomeScreenState extends State<HomeScreen> {
                                             10,
                                           ),
                                           border: Border.all(
-                                            color: Colors.green,
+                                            color: const Color(0xFF4A6CF7),
                                             width: 1.3,
                                           ),
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.chat,
-                                              color: Colors.green,
-                                            ),
-                                            SizedBox(width: 6),
-                                            Text(
-                                              'Whatsapp',
-                                              style: TextStyle(
-                                                color: Colors.green,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
+                                        child: const Icon(
+                                          Icons.phone,
+                                          color: Color(0xFF4A6CF7),
+                                          size: 22,
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+
+                                    const SizedBox(width: 10),
+
+                                    // WHATSAPP BUTTON
+                                    Expanded(
+                                      flex: 2,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final phone = "62811879603";
+                                          final url = Uri.parse(
+                                            "https://wa.me/$phone",
+                                          );
+
+                                          if (await canLaunchUrl(url)) {
+                                            await launchUrl(
+                                              url,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 42,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.green,
+                                              width: 1.3,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Icon(
+                                                Icons.chat,
+                                                color: Colors.green,
+                                              ),
+                                              SizedBox(width: 6),
+                                              Text(
+                                                'Whatsapp',
+                                                style: TextStyle(
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
