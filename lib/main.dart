@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mitra_property/routes/app_routes.dart'; // pastiin path-nya ini bener
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // tanggal
+  await initializeDateFormatting('id_ID', null);
+
   runApp(const MitraPropertyApp());
 }
 

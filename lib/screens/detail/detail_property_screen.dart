@@ -147,6 +147,33 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   Set<String> savedIds = {};
   bool isLoadingSaved = true;
 
+  String formatTanggal(String isoDate) {
+    try {
+      final date = DateTime.parse(
+        isoDate.replaceFirst(RegExp(r':(\d{3})Z$'), '.\$1Z'),
+      );
+
+      const bulan = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
+
+      return "${date.day} ${bulan[date.month - 1]} ${date.year}";
+    } catch (_) {
+      return isoDate;
+    }
+  }
+
   //   bool isLoadingVideos = true;
   // List<VideoModel> videos = [];
 
@@ -905,14 +932,14 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  "Diperbarui ${property.updatedAt}",
+                  "Diperbarui ${formatTanggal(property.updatedAt)}",
                   style: const TextStyle(fontSize: 13, color: Colors.black87),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 15),
 
           // ===== AJUKAN SECTION =====
           if (widget.role == "admin" || widget.role == "marketing") ...[
