@@ -37,11 +37,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
-      
-      final userIdString = prefs.getString("id");
-      final userId = int.tryParse(userIdString ?? "");
 
-      if (userId == null) {
+      final userId = prefs.getString("id");
+
+      if (userId == null || userId.isEmpty) {
         throw "User ID tidak ditemukan";
       }
 
@@ -56,7 +55,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       //   ENDPOINT YANG BENAR
       // ========================
       final response = await dio.put(
-        "http://api.mitrapropertysentul.com/users/$userId",
+        "https://api.mitrapropertysentul.com/users/$userId",
         data: data,
         options: Options(
           headers: {
