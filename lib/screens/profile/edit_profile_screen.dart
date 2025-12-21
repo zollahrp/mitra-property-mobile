@@ -74,7 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         await prefs.setString("username", usernameC.text);
         await prefs.setString("alamat", alamatC.text);
 
-        Navigator.pop(context);
+        Navigator.pop(context, true); // kirim sinyal berhasil
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil diperbarui")),

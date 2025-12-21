@@ -120,24 +120,39 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  nama,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E1E1E),
+                Flexible(
+                  child: Text(
+                    nama,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E1E1E),
+                    ),
                   ),
                 ),
+
                 const SizedBox(width: 6),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => const EditProfileScreen(),
                       ),
                     );
+
+                    if (result == true) {
+                      await loadProfileData(); // refresh data
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Profil berhasil diperbarui"),
+                        ),
+                      );
+                    }
                   },
+
                   child: const Icon(Icons.edit, size: 18),
                 ),
               ],
@@ -193,7 +208,11 @@ class InfoCard extends StatelessWidget {
   final String title;
   final String value;
 
-  const InfoCard({super.key, required this.title, required this.value});
+  const InfoCard({
+    super.key,
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -212,22 +231,35 @@ class InfoCard extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          // TITLE
+          SizedBox(
+            width: 90, // biar rapi & konsisten
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF4A6CF7),
-              fontWeight: FontWeight.w600,
+
+          const SizedBox(width: 10),
+
+          // VALUE (DINAMIS + WRAP)
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 3, // email & alamat bisa multiline
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF4A6CF7),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -235,3 +267,4 @@ class InfoCard extends StatelessWidget {
     );
   }
 }
+
