@@ -962,7 +962,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
 
                 SizedBox(
-                  height: MediaQuery.of(context).size.width * 0.65,
+                  height: 260, // tinggi list shorts
                   child: isLoadingVideos
                       ? const Center(child: CircularProgressIndicator())
                       : videos.isEmpty
@@ -986,22 +986,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               },
                               child: Container(
-                                width: 160,
+                                width: 150, // ramping ala Shorts
                                 margin: const EdgeInsets.only(right: 16),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      getYoutubeThumbnail(vid.link),
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
                                     ),
-                                    fit: BoxFit.cover,
-                                  ),
+                                  ],
                                 ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.play_circle_fill,
-                                    color: Colors.white,
-                                    size: 50,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      // === THUMBNAIL ===
+                                      AspectRatio(
+                                        aspectRatio: 9 / 16, // 🔥 SHORTS RATIO
+                                        child: Image.network(
+                                          getYoutubeThumbnail(vid.link),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+
+                                      // === GRADIENT OVERLAY ===
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.bottomCenter,
+                                            end: Alignment.topCenter,
+                                            colors: [
+                                              Colors.black.withOpacity(0.45),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // === PLAY ICON ===
+                                      const Center(
+                                        child: Icon(
+                                          Icons.play_circle_fill,
+                                          color: Colors.white,
+                                          size: 48,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

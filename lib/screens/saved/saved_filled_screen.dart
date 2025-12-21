@@ -358,7 +358,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                   // TITLE
                   Text(
                     p.nama,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 14,
@@ -372,6 +372,8 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                   // LOCATION
                   Text(
                     p.lokasi,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
