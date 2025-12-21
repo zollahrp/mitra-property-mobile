@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:mitra_property/models/banner_model.dart';
 import 'package:mitra_property/models/property_model.dart';
 import 'package:mitra_property/models/video_model.dart';
 import 'package:mitra_property/screens/detail/detail_property_screen.dart';
 import 'package:mitra_property/screens/home/VideoPlayerScreen.dart';
 import 'package:mitra_property/screens/home/filter_modal.dart';
+import 'package:mitra_property/service/banner_service.dart';
 import 'package:mitra_property/service/property_service.dart';
 import 'package:mitra_property/service/saved_service.dart';
 import 'package:mitra_property/service/video_service.dart';
@@ -135,6 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Set<String> savedIds = {};
   bool isLoadingSaved = true;
 
+  final BannerService _bannerService = BannerService();
+  List<BannerModel> banners = [];
+  bool isLoadingBanner = true;
+
+  PageController _bannerController = PageController();
+  int _currentBanner = 0;
+  Timer? _bannerTimer;
+
   String getYoutubeId(String url) {
     try {
       // Hilangkan whitespace, dll
@@ -181,6 +193,52 @@ class _HomeScreenState extends State<HomeScreen> {
     _initData();
     loadUserData();
     loadSavedIds();
+    _loadBanners();
+  }
+
+  Future<void> _loadBanners() async {
+    try {
+      final result = await _bannerService.fetchBanners();
+
+      setState(() {
+        banners = result;
+        isLoadingBanner = false;
+      });
+
+      if (banners.length > 1) {
+        _startAutoSlide();
+      }
+    } catch (e) {
+      isLoadingBanner = false;
+      debugPrint('Error banner: $e');
+    }
+  }
+
+  void _startAutoSlide() {
+    _bannerTimer?.cancel();
+
+    _bannerTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
+      if (!mounted || banners.isEmpty) return;
+
+      _currentBanner++;
+
+      if (_currentBanner >= banners.length) {
+        _currentBanner = 0;
+      }
+
+      _bannerController.animateToPage(
+        _currentBanner,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    super.dispose();
   }
 
   Future<void> loadSavedIds() async {
@@ -708,16 +766,62 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
 
               // ==== Banner Promo ====
-              Container(
-                width: double.infinity,
+              SizedBox(
                 height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/special_property.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                child: isLoadingBanner
+                    ? const Center(child: CircularProgressIndicator())
+                    : banners.isEmpty
+                    ? Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Text(
+                          "Banner belum tersedia",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : PageView.builder(
+                        controller: _bannerController,
+
+                        itemCount: banners.length,
+                        itemBuilder: (context, index) {
+                          final banner = banners[index];
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                banner.imageUrl,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+
+                                // 🔄 loading image
+                                loadingBuilder: (c, child, p) {
+                                  if (p == null) return child;
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                },
+
+                                // ❌ error image
+                                errorBuilder: (c, e, s) {
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.broken_image,
+                                      size: 40,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
               ),
 
               const SizedBox(height: 24),
@@ -1305,4 +1409,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // Widget _buildBanner() {
+  //   if (isLoadingBanner) {
+  //     return const SizedBox(
+  //       height: 180,
+  //       child: Center(child: CircularProgressIndicator()),
+  //     );
+  //   }
+
+  //   if (banners.isEmpty) {
+  //     return const SizedBox.shrink();
+  //   }
+
+  //   return Container(
+  //     width: double.infinity,
+  //     height: 180,
+  //     decoration: BoxDecoration(
+  //       borderRadius: BorderRadius.circular(16),
+  //       image: DecorationImage(
+  //         image: NetworkImage(banners.first.imageUrl),
+  //         fit: BoxFit.cover,
+  //       ),
+  //     ),
+  //   );
+  // }
 }
