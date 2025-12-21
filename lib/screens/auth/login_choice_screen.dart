@@ -108,7 +108,7 @@ class LoginChoiceScreen extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'OR',
+                        'Atau',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

@@ -95,7 +95,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     Navigator.pushNamed(context, AppRoutes.forgotPassword);
                   },
                   child: const Text(
-                    "Forgot Password?",
+                    "Lupa Password?",
                     style: TextStyle(
                       color: Color(0xFF4A6CF7),
                       fontWeight: FontWeight.w500,
