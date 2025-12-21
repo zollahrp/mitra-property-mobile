@@ -681,10 +681,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
+        // top: false,
         child: RefreshIndicator(
           onRefresh: _onRefresh,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(), // 🔥 WAJIB
+            physics: const AlwaysScrollableScrollPhysics(), 
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Hello, $username',
+                                'Hai, $username',
                                 style: const TextStyle(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w700,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitra_property/AuthGate.dart';
 import 'package:mitra_property/routes/app_routes.dart'; // pastiin path-nya ini bener
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -26,11 +27,12 @@ class MitraPropertyApp extends StatelessWidget {
         useMaterial3: true,
       ),
 
-      // pastiin rute awalnya salah satu dari yang ada di app_routes.dart
-      initialRoute: AppRoutes.splash, // bisa diganti loginChoice juga
+      // 🔥 INI KUNCINYA
+      home: const AuthGate(),
+
+      // routes masih boleh dipake
       routes: AppRoutes.routes,
 
-      // tambahin fallback biar gak error kalo route gak ketemu
       onUnknownRoute: (settings) => MaterialPageRoute(
         builder: (_) => const Scaffold(
           body: Center(
