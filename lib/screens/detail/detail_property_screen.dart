@@ -535,16 +535,27 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                           topLeft: Radius.circular(16),
                                           topRight: Radius.circular(16),
                                         ),
-                                        child: Image.network(
-                                          p.foto.isNotEmpty
-                                              ? p.foto.first.photoUrl
-                                              : "https://via.placeholder.com/300",
-                                          height: 120,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
+                                        child: p.foto.isNotEmpty
+                                            ? Image.network(
+                                                p.foto.first.photoUrl,
+                                                height: 120,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    Image.asset(
+                                                      "assets/images/house.png",
+                                                      height: 120,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                              )
+                                            : Image.asset(
+                                                "assets/images/house.png",
+                                                height: 120,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
                                       ),
-
                                       // ==== BOOKMARK ====
                                       Positioned(
                                         top: 8,

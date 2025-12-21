@@ -162,19 +162,27 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
                   ),
-                  child: Image.network(
-                    p.foto.isNotEmpty ? p.foto.first.photoUrl : "",
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) {
-                      return Container(
-                        height: 120,
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image, size: 40),
-                      );
-                    },
-                  ),
+                  child: p.foto.isNotEmpty
+                      ? Image.network(
+                          p.foto.first.photoUrl,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) {
+                            return Image.asset(
+                              'assets/images/house.png',
+                              height: 120,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          'assets/images/house.png',
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
 
                 // BOOKMARK ICON (STATIC - SAVED SCREEN)
@@ -305,6 +313,34 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+
+  Widget _buildPropertyImage(PropertyModel p) {
+    // kalau tidak ada foto sama sekali
+    if (p.foto.isEmpty || p.foto.first.photoUrl.isEmpty) {
+      return Image.asset(
+        'assets/images/house.png',
+        height: 120,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+
+    // kalau ada foto
+    return Image.network(
+      p.foto.first.photoUrl,
+      height: 120,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) {
+        return Image.asset(
+          'assets/images/house.png',
+          height: 120,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        );
+      },
     );
   }
 }
