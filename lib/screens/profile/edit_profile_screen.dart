@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -15,11 +18,110 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final usernameC = TextEditingController();
   final alamatC = TextEditingController();
   bool isLoading = false;
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+  String? photoUrl;
+  bool isLoadingPhoto = true;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    _loadUserPhoto();
+  }
+
+  Future<void> _loadUserPhoto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString("id");
+      final token = prefs.getString("token");
+
+      if (userId == null || token == null) return;
+
+      final dio = Dio();
+
+      final response = await dio.get(
+        "https://api.mitrapropertysentul.com/users/photo/$userId",
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          photoUrl = response.data["photo"];
+          isLoadingPhoto = false;
+        });
+      } else {
+        isLoadingPhoto = false;
+      }
+    } catch (_) {
+      isLoadingPhoto = false;
+    }
+  }
+
+  Future<void> _pickAndUploadPhoto() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      _selectedImage = File(picked.path);
+    });
+
+    await _uploadProfilePhoto();
+  }
+
+  Future<void> _uploadProfilePhoto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+      final userId = prefs.getString("id");
+
+      if (token == null || userId == null) {
+        throw "Token atau User ID tidak ada";
+      }
+
+      final dio = Dio();
+
+      final formData = FormData.fromMap({
+        "photo": await MultipartFile.fromFile(
+          _selectedImage!.path,
+          filename: _selectedImage!.path.split('/').last,
+        ),
+      });
+
+      final response = await dio.post(
+        "https://api.mitrapropertysentul.com/users/photo/$userId",
+        data: formData,
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "multipart/form-data",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Foto berhasil diupload, klik Simpan Perubahan untuk menyimpan",
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Gagal upload foto")));
+    }
   }
 
   Future<void> _loadUser() async {
@@ -157,36 +259,48 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             Material(
                               elevation: 10,
                               shape: const CircleBorder(),
-                              child: const CircleAvatar(
+                              child: CircleAvatar(
                                 radius: 52,
                                 backgroundColor: Colors.white,
-                                child: CircleAvatar(
-                                  radius: 48,
-                                  backgroundImage: AssetImage(
-                                    "assets/images/avatar.png",
-                                  ),
-                                ),
+                                child: isLoadingPhoto
+                                    ? const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      )
+                                    : CircleAvatar(
+                                        radius: 48,
+                                        backgroundImage: _selectedImage != null
+                                            ? FileImage(_selectedImage!)
+                                            : photoUrl != null
+                                            ? NetworkImage(photoUrl!)
+                                            : const AssetImage(
+                                                    "assets/images/avatar.png",
+                                                  )
+                                                  as ImageProvider,
+                                      ),
                               ),
                             ),
 
-                            // Small edit button
-                            Container(
-                              height: 34,
-                              width: 34,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt_rounded,
-                                size: 18,
-                                color: Color(0xFF4A6CF7),
+                            // 👇 IKON KAMERA ADA DI SINI & BISA DIKLIK
+                            GestureDetector(
+                              onTap: _pickAndUploadPhoto,
+                              child: Container(
+                                height: 34,
+                                width: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 18,
+                                  color: Color(0xFF4A6CF7),
+                                ),
                               ),
                             ),
                           ],

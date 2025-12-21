@@ -17,6 +17,8 @@ import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mitra_property/utils/property_helper.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 enum BookmarkState { idle, loading }
 
@@ -130,6 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<VideoModel> videos = [];
   bool isLoading = true;
   bool isLoadingVideos = true;
+  String? photoUrl;
+  String token = "";
+  bool isLoadingPhoto = true;
 
   Map<String, dynamic> activeFilters = {};
   List<PropertyModel> allProperties = [];
@@ -195,6 +200,39 @@ class _HomeScreenState extends State<HomeScreen> {
     loadUserData();
     loadSavedIds();
     _loadBanners();
+    loadUserPhoto();
+  }
+
+  Future<void> loadUserPhoto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString("id");
+      final storedToken = prefs.getString("token");
+
+      if (userId == null || storedToken == null) return;
+
+      final response = await http.get(
+        Uri.parse("https://api.mitrapropertysentul.com/users/photo/$userId"),
+        headers: {
+          "Authorization": "Bearer $storedToken",
+          "Accept": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          photoUrl = data["photo"];
+          token = storedToken;
+          isLoadingPhoto = false;
+        });
+      } else {
+        isLoadingPhoto = false;
+      }
+    } catch (e) {
+      isLoadingPhoto = false;
+    }
   }
 
   Future<void> _loadBanners() async {
@@ -604,11 +642,30 @@ class _HomeScreenState extends State<HomeScreen> {
                             radius: 26,
                             backgroundColor: Colors.white,
                             child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/avatar.png',
-                                width: 46,
-                                height: 46,
-                                fit: BoxFit.cover,
+                              child: ClipOval(
+                                child: isLoadingPhoto
+                                    ? const SizedBox(
+                                        width: 46,
+                                        height: 46,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Image.network(
+                                        photoUrl ?? "",
+                                        width: 46,
+                                        height: 46,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Image.asset(
+                                                'assets/images/avatar.png',
+                                                width: 46,
+                                                height: 46,
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                      ),
                               ),
                             ),
                           ),
@@ -1020,7 +1077,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         spacing: 6,
                                         runSpacing: 6,
                                         children: [
-                                          _buildTagGrey(getListingLabel(p.listingType)),
+                                          _buildTagGrey(
+                                            getListingLabel(p.listingType),
+                                          ),
                                           _buildTagBlue(
                                             shortenType(p.propertyType ?? ""),
                                           ),

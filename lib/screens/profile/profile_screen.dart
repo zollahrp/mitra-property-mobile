@@ -4,6 +4,8 @@ import 'package:mitra_property/screens/profile/faq_screen.dart';
 import 'package:mitra_property/screens/profile/show_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     initProfile();
+    loadUserPhoto();
   }
 
   Future<void> initProfile() async {
@@ -54,10 +57,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (userId == null || token == null) return;
 
-      setState(() {
-        photoUrl = "https://api.mitrapropertysentul.com/users/photo/$userId";
+      final response = await http.get(
+        Uri.parse("https://api.mitrapropertysentul.com/users/photo/$userId"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          photoUrl = data["photo"]; 
+          isLoadingPhoto = false;
+        });
+      } else {
         isLoadingPhoto = false;
-      });
+      }
     } catch (e) {
       isLoadingPhoto = false;
     }

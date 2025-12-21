@@ -22,17 +22,6 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   File? _selectedImage;
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-
-    if (picked != null) {
-      setState(() {
-        _selectedImage = File(picked.path);
-      });
-    }
-  }
-
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -98,33 +87,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Avatar
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 45,
-                          backgroundColor: const Color(0xFFFFE066),
-                          backgroundImage: _selectedImage != null
-                              ? FileImage(_selectedImage!)
-                              : const AssetImage('assets/images/avatar.png')
-                                    as ImageProvider,
-                        ),
-                        GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              color: Color(0xFF4A6CF7),
-                              size: 20,
+                    SizedBox(
+                      width: 90,
+                      height: 90,
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 45,
+                            backgroundColor: const Color(0xFFFFE066),
+                            backgroundImage: const AssetImage(
+                              'assets/images/avatar.png',
                             ),
                           ),
-                        ),
-                      ],
+
+                          GestureDetector(
+                            onTap: () {
+                              _showSnack(
+                                "Tidak bisa memperbarui foto profil. Silakan register terlebih dahulu lalu ubah di menu Edit Profile.",
+                              );
+                            },
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Color(0xFF4A6CF7),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),

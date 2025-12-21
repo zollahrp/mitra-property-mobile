@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mitra_property/screens/profile/edit_profile_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ShowProfileScreen extends StatefulWidget {
   const ShowProfileScreen({super.key});
@@ -14,11 +16,47 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
   String email = "";
   String username = "";
   String alamat = "";
+  String? photoUrl;
+  String token = "";
+  bool isLoadingPhoto = true;
 
   @override
   void initState() {
     super.initState();
     loadProfileData();
+    loadUserPhoto();
+  }
+
+  Future<void> loadUserPhoto() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString("id");
+      final storedToken = prefs.getString("token");
+
+      if (userId == null || storedToken == null) return;
+
+      final response = await http.get(
+        Uri.parse("https://api.mitrapropertysentul.com/users/photo/$userId"),
+        headers: {
+          "Authorization": "Bearer $storedToken",
+          "Accept": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          photoUrl = data["photo"];
+          token = storedToken;
+          isLoadingPhoto = false;
+        });
+      } else {
+        isLoadingPhoto = false;
+      }
+    } catch (e) {
+      isLoadingPhoto = false;
+    }
   }
 
   Future<void> loadProfileData() async {
@@ -93,14 +131,27 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
                           child: Material(
                             elevation: 10,
                             shape: const CircleBorder(),
-                            child: const CircleAvatar(
+                            child: CircleAvatar(
                               radius: 52,
                               backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                radius: 48,
-                                backgroundImage: AssetImage(
-                                  "assets/images/avatar.png",
-                                ),
+                              child: ClipOval(
+                                child: isLoadingPhoto
+                                    ? const CircularProgressIndicator()
+                                    : Image.network(
+                                        photoUrl ?? "",
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Image.asset(
+                                                "assets/images/avatar.png",
+                                                width: 96,
+                                                height: 96,
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                      ),
                               ),
                             ),
                           ),
@@ -145,6 +196,7 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
 
                     if (result == true) {
                       await loadProfileData(); // refresh data
+                      await loadUserPhoto();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Profil berhasil diperbarui"),
@@ -208,11 +260,7 @@ class InfoCard extends StatelessWidget {
   final String title;
   final String value;
 
-  const InfoCard({
-    super.key,
-    required this.title,
-    required this.value,
-  });
+  const InfoCard({super.key, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -267,4 +315,3 @@ class InfoCard extends StatelessWidget {
     );
   }
 }
-

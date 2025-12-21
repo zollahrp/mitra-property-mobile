@@ -141,7 +141,7 @@ class LoginChoiceScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Create an Account',
+                      'Buat Akun',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -155,7 +155,7 @@ class LoginChoiceScreen extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 const Text(
-                  '© 2025 • All Rights Reserved Mitra Property',
+                  '© 2025 • Semua Hak Dilindungi Mitra Property',
                   style: TextStyle(
                     fontSize: 11.5,
                     color: Colors.grey,
