@@ -356,6 +356,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void openWhatsAppMarketing({required String phone, String? message}) async {
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Nomor WhatsApp tidak tersedia")),
+      );
+      return;
+    }
+
+    final fixedPhone = phone.startsWith("62")
+        ? phone
+        : phone.startsWith("0")
+        ? phone.replaceFirst("0", "62")
+        : "62$phone";
+
+    final url = Uri.parse(
+      message == null
+          ? "https://wa.me/$fixedPhone"
+          : "https://wa.me/$fixedPhone?text=${Uri.encodeComponent(message)}",
+    );
+
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
+
   void _openFilterSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1001,6 +1024,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? const Center(child: Text("Tidak ada video"))
                       : ListView.builder(
                           scrollDirection: Axis.horizontal,
+                          cacheExtent: 500,
                           itemCount: videos.length,
                           itemBuilder: (context, index) {
                             final vid = videos[index];
@@ -1526,21 +1550,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     // CALL BUTTON
                                     Expanded(
-                                      child: Container(
-                                        height: 42,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final fixedPhone =
+                                              p.telepon.startsWith("0")
+                                              ? p.telepon.replaceFirst(
+                                                  "0",
+                                                  "+62",
+                                                )
+                                              : "+${p.telepon}";
+
+                                          final url = Uri.parse(
+                                            "tel:$fixedPhone",
+                                          );
+                                          await launchUrl(url);
+                                        },
+                                        child: Container(
+                                          height: 42,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            border: Border.all(
+                                              color: const Color(0xFF4A6CF7),
+                                              width: 1.3,
+                                            ),
                                           ),
-                                          border: Border.all(
-                                            color: const Color(0xFF4A6CF7),
-                                            width: 1.3,
+                                          child: const Icon(
+                                            Icons.phone,
+                                            color: Color(0xFF4A6CF7),
+                                            size: 22,
                                           ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.phone,
-                                          color: Color(0xFF4A6CF7),
-                                          size: 22,
                                         ),
                                       ),
                                     ),
@@ -1552,9 +1592,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                       flex: 2,
                                       child: GestureDetector(
                                         onTap: () async {
-                                          final phone = "62811879603";
+                                          // 1️⃣ FORMAT HARGA
+                                          final hargaInt =
+                                              int.tryParse(p.harga ?? "0") ?? 0;
+                                          final hargaFormatted = NumberFormat(
+                                            '#,###',
+                                            'id_ID',
+                                          ).format(hargaInt);
+
+                                          // 2️⃣ ISI PESAN
+                                          final message =
+                                              """
+Halo 👋
+Saya tertarik dengan properti berikut:
+
+🏡 Nama Properti :
+${p.nama}
+
+🆔 Kode Properti :
+${p.kode}
+
+📍 Lokasi :
+${p.lokasi}
+
+💰 Harga :
+Rp $hargaFormatted
+
+Mohon info lebih lanjut ya 🙏
+Terima kasih
+""";
+
+                                          // 3️⃣ ENCODE & KIRIM KE WA
+                                          final encodedMessage =
+                                              Uri.encodeComponent(message);
+                                          final phone = p.telepon;
                                           final url = Uri.parse(
-                                            "https://wa.me/$phone",
+                                            "https://wa.me/$phone?text=$encodedMessage",
                                           );
 
                                           if (await canLaunchUrl(url)) {

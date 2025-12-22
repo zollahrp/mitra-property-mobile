@@ -260,15 +260,51 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     filterProperties();
   }
 
-  void openWhatsApp(String message) async {
+  void openWhatsAppAdmin(String message) async {
+    const adminPhone = "62811879603"; // FIXED
     final url = Uri.parse(
-      "https://wa.me/62811879603?text=${Uri.encodeComponent(message)}",
+      "https://wa.me/$adminPhone?text=${Uri.encodeComponent(message)}",
     );
 
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception("Tidak bisa membuka WhatsApp");
+      throw Exception("Tidak bisa membuka WhatsApp Admin");
     }
   }
+
+  void openWhatsAppMarketing({required String phone, String? message}) async {
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Nomor WhatsApp tidak tersedia")),
+      );
+      return;
+    }
+
+    final fixedPhone = phone.startsWith("62")
+        ? phone
+        : phone.startsWith("0")
+        ? phone.replaceFirst("0", "62")
+        : "62$phone";
+
+    final url = Uri.parse(
+      message == null
+          ? "https://wa.me/$fixedPhone"
+          : "https://wa.me/$fixedPhone?text=${Uri.encodeComponent(message)}",
+    );
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception("Tidak bisa membuka WhatsApp Marketing");
+    }
+  }
+
+  // void openWhatsApp(String message) async {
+  //   final url = Uri.parse(
+  //     "https://wa.me/62811879603?text=${Uri.encodeComponent(message)}",
+  //   );
+
+  //   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+  //     throw Exception("Tidak bisa membuka WhatsApp");
+  //   }
+  // }
 
   void filterProperties() {
     List<PropertyModel> filtered = List.from(allProperties);
@@ -646,6 +682,8 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                         // LOCATION
                                         Text(
                                           p.lokasi ?? "Lokasi tidak tersedia",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
@@ -669,14 +707,41 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                 child: Row(
                   children: [
                     // ===== BUTTON CALL =====
-                    Container(
-                      width: 70,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.blue, width: 1.5),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          final phone = widget.property.telepon.trim();
+
+                          if (phone.isEmpty) return;
+
+                          final fixedPhone = phone.startsWith("0")
+                              ? phone.replaceFirst("0", "+62")
+                              : phone.startsWith("+")
+                              ? phone
+                              : "+$phone";
+
+                          final url = Uri.parse("tel:$fixedPhone");
+
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFF4A6CF7),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.phone,
+                            color: Color(0xFF4A6CF7),
+                            size: 26,
+                          ),
+                        ),
                       ),
-                      child: Icon(Icons.phone, color: Colors.blue, size: 26),
                     ),
 
                     const SizedBox(width: 12),
@@ -684,17 +749,40 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                     // ===== BUTTON WHATSAPP =====
                     Expanded(
                       child: GestureDetector(
-                        onTap: () async {
-                          final phone = "62811879603";
-                          final url = Uri.parse("https://wa.me/$phone");
+                        onTap: () {
+                          // 🔢 FORMAT HARGA (PAKE TITIK)
+                          final hargaInt =
+                              int.tryParse(widget.property.harga ?? "0") ?? 0;
+                          final hargaFormatted = NumberFormat(
+                            '#,###',
+                            'id_ID',
+                          ).format(hargaInt);
 
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(
-                              url,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
+                          openWhatsAppMarketing(
+                            phone: widget.property.telepon,
+                            message:
+                                """
+Halo 👋
+Saya tertarik dengan properti berikut:
+
+🏡 Nama Properti :
+${widget.property.nama}
+
+🆔 Kode Properti :
+${widget.property.kode}
+
+📍 Lokasi :
+${widget.property.lokasi}
+
+💰 Harga :
+Rp $hargaFormatted
+
+Mohon info lebih lanjut ya 🙏
+Terima kasih
+""",
+                          );
                         },
+
                         child: Container(
                           height: 50,
                           decoration: BoxDecoration(
@@ -998,7 +1086,7 @@ Halo, saya ingin mengajukan perhitungan pajak untuk properti berikut:
 
 Mohon bantuannya ya.
 """;
-                      openWhatsApp(msg);
+                      openWhatsAppAdmin(msg);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(14),
@@ -1044,7 +1132,7 @@ Halo, saya ingin mengajukan perhitungan KPR untuk properti berikut:
 
 Mohon informasi lebih lanjut terkait simulasi cicilan.
 """;
-                      openWhatsApp(msg);
+                      openWhatsAppAdmin(msg);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(14),
