@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mitra_property/models/property_model.dart';
 import 'package:mitra_property/service/property_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mitra_property/service/saved_service.dart';
 
@@ -125,6 +128,9 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
 
   late final PageController _pageController;
   Timer? _autoSlideTimer;
+  String marketingName = "Marketing";
+  String? marketingPhoto;
+  bool isLoadingMarketing = true;
 
   // List gambar dari assets
   // final List<String> images = [
@@ -146,6 +152,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   final SavedService savedService = SavedService();
   Set<String> savedIds = {};
   bool isLoadingSaved = true;
+
 
   String formatTanggal(String isoDate) {
     try {
@@ -185,7 +192,45 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     _startAutoSlide();
     loadProperties();
     loadSavedProperties();
+
+    debugPrint("PROPERTY USER ID 👉 ${widget.property.userId}");  
+    
+    loadMarketingProfile();
   }
+
+  Future<void> loadMarketingProfile() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final userId = widget.property.userId;
+
+    if (token == null || userId == null) return;
+
+    final response = await http.get(
+      Uri.parse("https://api.mitrapropertysentul.com/users/$userId"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final user = body["data"];
+
+      setState(() {
+        marketingName = user["nama"] ?? "Marketing";
+        // marketingRole = user["role"] ?? "";
+        marketingPhoto = user["photo"];
+        isLoadingMarketing = false;
+      });
+    } else {
+      isLoadingMarketing = false;
+    }
+  } catch (e) {
+    isLoadingMarketing = false;
+  }
+}
 
   void _startAutoSlide() {
     _autoSlideTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
@@ -452,35 +497,35 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                     // ==== MARKETING PROFILE ====
                     Row(
                       children: [
-                        // Foto
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage("assets/images/marketing.png"),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                        // FOTO MARKETING
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: marketingPhoto != null
+                              ? NetworkImage(marketingPhoto!)
+                              : const AssetImage("assets/images/avatar.png")
+                                    as ImageProvider,
                         ),
+
                         const SizedBox(width: 12),
 
-                        // Nama + role (DINAMIS)
+                        // NAMA + ROLE
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Marketing",
-                              style: TextStyle(
+                            Text(
+                              marketingName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              "User ID: ${widget.property.userId.substring(0, 8)}",
-                              style: const TextStyle(
+                            const Text(
+                              "Marketing Property",
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
                               ),
