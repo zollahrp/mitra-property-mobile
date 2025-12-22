@@ -186,7 +186,7 @@ class _SignInScreenState extends State<SignInScreen> {
         await prefs.setString("email", user["email"] ?? "");
         await prefs.setString("username", user["username"] ?? "");
         await prefs.setString("alamat", user["alamat"] ?? "");
-        await prefs.setString("role", response.data["role"] ?? "");
+        await prefs.setString("role", user["role"] ?? "");
 
         _showSnack("Login berhasil, tunggu sebentar...");
 

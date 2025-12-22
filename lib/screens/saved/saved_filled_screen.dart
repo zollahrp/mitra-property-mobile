@@ -281,12 +281,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DetailPropertyScreen(
-              property: p, // 🔥 KIRIM LANGSUNG
-              role: "user", // sesuaikan kalau ada role dynamic
-            ),
-          ),
+          MaterialPageRoute(builder: (_) => DetailPropertyScreen(property: p)),
         );
       },
       child: Container(

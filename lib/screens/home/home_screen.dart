@@ -1202,10 +1202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => DetailPropertyScreen(
-                                    property: p,
-                                    role: role,
-                                  ),
+                                  builder: (_) => DetailPropertyScreen(property: p),
                                 ),
                               );
                             },
@@ -1415,7 +1412,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            DetailPropertyScreen(property: p, role: role),
+                            DetailPropertyScreen(property: p),
                       ),
                     );
                   },

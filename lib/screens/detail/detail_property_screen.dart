@@ -14,13 +14,8 @@ enum BookmarkState { idle, loading }
 
 class DetailPropertyScreen extends StatefulWidget {
   final PropertyModel property;
-  final String role; // ✅ SIMPAN ROLE
 
-  const DetailPropertyScreen({
-    super.key,
-    required this.property,
-    required this.role,
-  });
+  const DetailPropertyScreen({super.key, required this.property});
 
   @override
   State<DetailPropertyScreen> createState() => _DetailPropertyScreenState();
@@ -125,6 +120,7 @@ class _BookmarkButtonState extends State<BookmarkButton> {
 class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   int currentIndex = 0;
   int visibleWordCount = 100;
+  String role = "";
 
   late final PageController _pageController;
   Timer? _autoSlideTimer;
@@ -152,7 +148,6 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   final SavedService savedService = SavedService();
   Set<String> savedIds = {};
   bool isLoadingSaved = true;
-
 
   String formatTanggal(String isoDate) {
     try {
@@ -189,48 +184,59 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
     super.initState();
     _pageController = PageController();
 
+    loadRole();
+
     _startAutoSlide();
     loadProperties();
     loadSavedProperties();
 
-    debugPrint("PROPERTY USER ID 👉 ${widget.property.userId}");  
-    
+    debugPrint("PROPERTY USER ID 👉 ${widget.property.userId}");
+
     loadMarketingProfile();
   }
 
-  Future<void> loadMarketingProfile() async {
-  try {
+  Future<void> loadRole() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-    final userId = widget.property.userId;
+    setState(() {
+      role = prefs.getString("role") ?? "";
+    });
 
-    if (token == null || userId == null) return;
+    debugPrint("ROLE DETAIL 👉 $role");
+  }
 
-    final response = await http.get(
-      Uri.parse("https://api.mitrapropertysentul.com/users/$userId"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      },
-    );
+  Future<void> loadMarketingProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+      final userId = widget.property.userId;
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      final user = body["data"];
+      if (token == null || userId == null) return;
 
-      setState(() {
-        marketingName = user["nama"] ?? "Marketing";
-        // marketingRole = user["role"] ?? "";
-        marketingPhoto = user["photo"];
+      final response = await http.get(
+        Uri.parse("https://api.mitrapropertysentul.com/users/$userId"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        final user = body["data"];
+
+        setState(() {
+          marketingName = user["nama"] ?? "Marketing";
+          // marketingRole = user["role"] ?? "";
+          marketingPhoto = user["photo"];
+          isLoadingMarketing = false;
+        });
+      } else {
         isLoadingMarketing = false;
-      });
-    } else {
+      }
+    } catch (e) {
       isLoadingMarketing = false;
     }
-  } catch (e) {
-    isLoadingMarketing = false;
   }
-}
 
   void _startAutoSlide() {
     _autoSlideTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
@@ -586,10 +592,8 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => DetailPropertyScreen(
-                                    property: p,
-                                    role: widget.role,
-                                  ),
+                                  builder: (_) =>
+                                      DetailPropertyScreen(property: p),
                                 ),
                               );
                             },
@@ -1111,26 +1115,45 @@ Terima kasih
           const SizedBox(height: 15),
 
           // ===== AJUKAN SECTION =====
-          if (widget.role == "admin" || widget.role == "marketing") ...[
-            const SizedBox(height: 20),
-
+          if (role == "admin" ||
+              role == "marketing" ||
+              role == "marketing_support" ||
+              role == "promotion") ...[
             // ===== AJUKAN SECTION =====
             Row(
               children: [
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
+                      // 🔢 FORMAT HARGA (PAKE TITIK)
+                      final hargaInt =
+                          int.tryParse(widget.property.harga ?? "0") ?? 0;
+                      final hargaFormatted = NumberFormat(
+                        '#,###',
+                        'id_ID',
+                      ).format(hargaInt);
+
                       final msg =
                           """
-Halo, saya ingin mengajukan perhitungan pajak untuk properti berikut:
+Halo 👋
+Saya ingin mengajukan *perhitungan pajak* untuk properti berikut:
 
-🏡 Nama: ${widget.property.nama}
-📍 Lokasi: ${widget.property.lokasi}
-💰 Harga: Rp ${widget.property.harga}
-📄 ID Properti: ${widget.property.id}
+🏡 Nama Properti :
+${widget.property.nama}
 
-Mohon bantuannya ya.
+🆔 Kode Properti :
+${widget.property.kode}
+
+📍 Lokasi :
+${widget.property.lokasi}
+
+💰 Harga :
+Rp $hargaFormatted
+
+Mohon dibantu perhitungannya ya 🙏  
+Terima kasih
 """;
+
                       openWhatsAppAdmin(msg);
                     },
                     child: Container(
@@ -1166,17 +1189,35 @@ Mohon bantuannya ya.
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
+                      // 🔢 FORMAT HARGA (PAKE TITIK)
+                      final hargaInt =
+                          int.tryParse(widget.property.harga ?? "0") ?? 0;
+                      final hargaFormatted = NumberFormat(
+                        '#,###',
+                        'id_ID',
+                      ).format(hargaInt);
+
                       final msg =
                           """
-Halo, saya ingin mengajukan perhitungan KPR untuk properti berikut:
+Halo 👋
+Saya ingin mengajukan *perhitungan KPR* untuk properti berikut:
 
-🏡 Nama: ${widget.property.nama}
-📍 Lokasi: ${widget.property.lokasi}
-💰 Harga: Rp ${widget.property.harga}
-📄 ID Properti: ${widget.property.id}
+🏡 Nama Properti :
+${widget.property.nama}
 
-Mohon informasi lebih lanjut terkait simulasi cicilan.
+🆔 Kode Properti :
+${widget.property.kode}
+
+📍 Lokasi :
+${widget.property.lokasi}
+
+💰 Harga :
+Rp $hargaFormatted
+
+Mohon informasi lebih lanjut terkait *simulasi cicilan KPR* ya 🙏  
+Terima kasih
 """;
+
                       openWhatsAppAdmin(msg);
                     },
                     child: Container(
