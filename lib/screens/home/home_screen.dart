@@ -685,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: RefreshIndicator(
           onRefresh: _onRefresh,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(), 
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1012,8 +1012,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        VideoPlayerScreen(youtubeUrl: fixedUrl),
+                                    builder: (_) => VideoPlayerScreen(
+                                      videos: videos,
+                                      initialIndex: index,
+                                    ),
                                   ),
                                 );
                               },
