@@ -127,6 +127,12 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
   String marketingName = "Marketing";
   String? marketingPhoto;
   bool isLoadingMarketing = true;
+  bool get canSeeInternalStats {
+    return role == "admin" ||
+        role == "marketing" ||
+        role == "marketing_support" ||
+        role == "promotion";
+  }
 
   // List gambar dari assets
   // final List<String> images = [
@@ -1063,26 +1069,29 @@ Terima kasih
           const SizedBox(height: 10),
 
           // ===== STATS =====
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _miniStat(
-                Icons.confirmation_number_outlined,
-                "Kode",
-                property.kode,
-              ),
-              _miniStat(
-                Icons.visibility_outlined,
-                "Views",
-                property.views.toString(),
-              ),
-              _miniStat(
-                Icons.ads_click_outlined,
-                "Clicks",
-                property.clicks.toString(),
-              ),
-            ],
-          ),
+          if (canSeeInternalStats) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _miniStat(
+                  Icons.confirmation_number_outlined,
+                  "Kode",
+                  property.kode,
+                ),
+                _miniStat(
+                  Icons.visibility_outlined,
+                  "Views",
+                  property.views.toString(),
+                ),
+                _miniStat(
+                  Icons.ads_click_outlined,
+                  "Clicks",
+                  property.clicks.toString(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
 
           const SizedBox(height: 20),
 

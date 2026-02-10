@@ -23,8 +23,12 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
   @override
   void initState() {
     super.initState();
-    loadProfileData();
-    loadUserPhoto();
+    _initProfile();
+  }
+
+  Future<void> _initProfile() async {
+    await loadProfileData();
+    await loadUserPhoto();
   }
 
   Future<void> loadUserPhoto() async {
@@ -85,7 +89,6 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
               children: [
                 Container(
                   height: 210,
-                  width: double.infinity,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -93,8 +96,6 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
                         Color(0xFF788BF3),
                         Color(0xFFA8BBFF),
                       ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
                     ),
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
@@ -103,67 +104,63 @@ class _ShowProfileScreenState extends State<ShowProfileScreen> {
                   ),
                 ),
 
-                Positioned.fill(
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20, top: 12),
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 25),
+                // BACK BUTTON
+                Positioned(
+                  top: 12,
+                  left: 20,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
 
-                      // Avatar Floating
-                      Positioned(
-                        bottom: -50,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: Material(
-                            elevation: 10,
-                            shape: const CircleBorder(),
-                            child: CircleAvatar(
-                              radius: 52,
-                              backgroundColor: Colors.white,
-                              child: ClipOval(
-                                child: isLoadingPhoto
-                                    ? const CircularProgressIndicator()
-                                    : Image.network(
-                                        photoUrl ?? "",
-                                        width: 96,
-                                        height: 96,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Image.asset(
-                                                "assets/images/avatar.png",
-                                                width: 96,
-                                                height: 96,
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
-                                      ),
-                              ),
-                            ),
-                          ),
+                // AVATAR
+                // AVATAR (DI DALAM TOP BAR)
+                Positioned(
+                  top: 60,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Material(
+                      elevation: 10,
+                      shape: const CircleBorder(),
+                      child: CircleAvatar(
+                        radius: 48,
+                        backgroundColor: Colors.white,
+                        child: ClipOval(
+                          child: isLoadingPhoto
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : (photoUrl != null && photoUrl!.isNotEmpty)
+                              ? Image.network(
+                                  photoUrl!,
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  "assets/images/avatar.png",
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 14),
+    
 
             // -------------------------------------
             // NAME + EDIT
