@@ -505,7 +505,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                     // Garis atas 2
                     Divider(thickness: 1, color: Colors.grey.withOpacity(0.3)),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 5),
 
                     // ==== MARKETING PROFILE ====
                     Row(
@@ -559,7 +559,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
 
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
@@ -760,68 +760,90 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                       ),
               ),
 
+              // Spacer untuk memberi ruang agar konten tidak tertutup navbar
               const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    // ===== BUTTON CALL =====
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          final phone = widget.property.telepon.trim();
+      // ==== STICKY BOTTOM NAVBAR (CALL + WHATSAPP) ====
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom + 16,
+          left: 16,
+          right: 16,
+          top: 20,
+        ),
+        child: Row(
+          children: [
+            // ===== BUTTON CALL =====
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  final phone = widget.property.telepon.trim();
 
-                          if (phone.isEmpty) return;
+                  if (phone.isEmpty) return;
 
-                          final fixedPhone = phone.startsWith("0")
-                              ? phone.replaceFirst("0", "+62")
-                              : phone.startsWith("+")
-                              ? phone
-                              : "+$phone";
+                  final fixedPhone = phone.startsWith("0")
+                      ? phone.replaceFirst("0", "+62")
+                      : phone.startsWith("+")
+                      ? phone
+                      : "+$phone";
 
-                          final url = Uri.parse("tel:$fixedPhone");
+                  final url = Uri.parse("tel:$fixedPhone");
 
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                          }
-                        },
-                        child: Container(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: const Color(0xFF4A6CF7),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.phone,
-                            color: Color(0xFF4A6CF7),
-                            size: 26,
-                          ),
-                        ),
-                      ),
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
+                },
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFF4A6CF7),
+                      width: 1.5,
                     ),
+                  ),
+                  child: const Icon(
+                    Icons.phone,
+                    color: Color(0xFF4A6CF7),
+                    size: 26,
+                  ),
+                ),
+              ),
+            ),
 
-                    const SizedBox(width: 12),
+            const SizedBox(width: 12),
 
-                    // ===== BUTTON WHATSAPP =====
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          // 🔢 FORMAT HARGA (PAKE TITIK)
-                          final hargaInt =
-                              int.tryParse(widget.property.harga ?? "0") ?? 0;
-                          final hargaFormatted = NumberFormat(
-                            '#,###',
-                            'id_ID',
-                          ).format(hargaInt);
+            // ===== BUTTON WHATSAPP =====
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () {
+                  // 🔢 FORMAT HARGA (PAKE TITIK)
+                  final hargaInt =
+                      int.tryParse(widget.property.harga ?? "0") ?? 0;
+                  final hargaFormatted = NumberFormat(
+                    '#,###',
+                    'id_ID',
+                  ).format(hargaInt);
 
-                          openWhatsAppMarketing(
-                            phone: widget.property.telepon,
-                            message:
-                                """
+                  openWhatsAppMarketing(
+                    phone: widget.property.telepon,
+                    message:
+                        """
 Halo 👋
 Saya tertarik dengan properti berikut:
 
@@ -840,44 +862,38 @@ Rp $hargaFormatted
 Mohon info lebih lanjut ya 🙏
 Terima kasih
 """,
-                          );
-                        },
+                  );
+                },
 
-                        child: Container(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.green, width: 1.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.message,
-                                color: Colors.green,
-                                size: 24,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                "Whatsapp",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.green, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.message,
+                        color: Colors.green,
+                        size: 24,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        "Whatsapp",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 40),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1291,6 +1291,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
+
+                // Jarak di bawah card Property
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -1298,6 +1301,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  
 
   Widget _buildPropertyList() {
     final recommended = getRecommendedProperties();
