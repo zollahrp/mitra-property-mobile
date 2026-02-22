@@ -9,6 +9,7 @@ import 'package:mitra_property/service/property_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mitra_property/service/saved_service.dart';
+import 'package:mitra_property/utils/property_helper.dart';
 
 enum BookmarkState { idle, loading }
 
@@ -578,15 +579,17 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: properties.length, // DINAMIS
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.6,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio:
+                              MediaQuery.of(context).size.width /
+                              (MediaQuery.of(context).size.height * 0.85),
+                        ),
                         itemBuilder: (context, index) {
                           final p = properties[index];
+                          final isSaved = savedIds.contains(p.id);
 
                           // === FIX harga ===
                           final harga = int.tryParse(p.harga ?? "0") ?? 0;
@@ -618,7 +621,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // ==== IMAGE ====
+                                  // ==== IMAGE + BOOKMARK ====
                                   Stack(
                                     children: [
                                       ClipRRect(
@@ -649,8 +652,8 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                       ),
                                       // ==== BOOKMARK ====
                                       Positioned(
-                                        top: 8,
-                                        right: 8,
+                                        top: 10,
+                                        right: 10,
                                         child: BookmarkButton(
                                           isSaved: savedIds.contains(p.id),
                                           onToggle: (wasSaved) async {
@@ -681,70 +684,72 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                   ),
 
                                   // ==== CONTENT ====
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      10,
-                                      12,
-                                      12,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // TAGS
-                                        Row(
-                                          children: [
-                                            _buildTagGrey(
-                                              (p.listingType ?? "") == "sell"
-                                                  ? "Jual"
-                                                  : "Sewa",
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        10,
+                                        12,
+                                        12,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // TAGS
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 6,
+                                            children: [
+                                              _buildTagGrey(
+                                                getListingLabel(p.listingType),
+                                              ),
+                                              _buildTagBlue(
+                                                shortenType(
+                                                  p.propertyType ?? "",
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 8),
+
+                                          // PRICE
+                                          Text(
+                                            hargaFormat,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4A6CF7),
                                             ),
-                                            const SizedBox(width: 6),
-                                            _buildTagBlue(
-                                              shortenType(p.propertyType ?? ""),
+                                          ),
+                                          const SizedBox(height: 6),
+
+                                          // NAME
+                                          Text(
+                                            p.nama ?? "-",
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
                                             ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        // PRICE
-                                        Text(
-                                          hargaFormat,
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF4A6CF7),
                                           ),
-                                        ),
 
-                                        const SizedBox(height: 6),
+                                          const SizedBox(height: 6),
 
-                                        // TITLE / NAMA PROPERTY
-                                        Text(
-                                          p.lokasi ?? "-",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
+                                          // LOCATION
+                                          Text(
+                                            p.lokasi ?? "Lokasi tidak tersedia",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
                                           ),
-                                        ),
-
-                                        const SizedBox(height: 6),
-
-                                        // LOCATION
-                                        Text(
-                                          p.lokasi ?? "Lokasi tidak tersedia",
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1020,6 +1025,9 @@ Terima kasih
   }
 
   Widget _buildDetailInfo(PropertyModel property) {
+    final harga = int.tryParse(property.harga ?? "0") ?? 0;
+    final hargaFormat = "Rp ${NumberFormat('#,###', 'id_ID').format(harga)}";
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
@@ -1038,7 +1046,7 @@ Terima kasih
 
           // ===== PRICE =====
           Text(
-            "Rp ${property.harga}",
+            hargaFormat,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -1066,44 +1074,54 @@ Terima kasih
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
 
           // ===== STATS =====
           if (canSeeInternalStats) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _miniStat(
-                  Icons.confirmation_number_outlined,
-                  "Kode",
-                  property.kode,
-                ),
-                _miniStat(
-                  Icons.visibility_outlined,
-                  "Views",
-                  property.views.toString(),
-                ),
-                _miniStat(
-                  Icons.ads_click_outlined,
-                  "Clicks",
-                  property.clicks.toString(),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _miniStat(
+                      Icons.confirmation_number_outlined,
+                      "Kode",
+                      property.kode,
+                    ),
+                  ),
+                  Expanded(
+                    child: _miniStat(
+                      Icons.visibility_outlined,
+                      "Views",
+                      property.views.toString(),
+                    ),
+                  ),
+                  Expanded(
+                    child: _miniStat(
+                      Icons.ads_click_outlined,
+                      "Clicks",
+                      property.clicks.toString(),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-          ],
+            const SizedBox(height: 10),
+          ],  
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
           // ===== TYPE - FURNISH - CERTIFICATE =====
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          child: Row(
             children: [
-              _detailItem("Type", property.type ?? "-"),
-              _detailItem("Furnish", property.furnish),
-              _detailItem("Certificate", property.sertifikat),
+              Expanded(child: _detailItem("Type", property.type ?? "-")),
+              Expanded(child: _detailItem("Furnish", property.furnish)),
+              Expanded(child: _detailItem("Certificate", property.sertifikat)),
             ],
           ),
+        ),
 
           const SizedBox(height: 20),
 
@@ -1182,7 +1200,7 @@ Terima kasih
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -1377,10 +1395,11 @@ Terima kasih
 
   Widget _detailItem(String title, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           title,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 13,
             color: Color(0xFF4A6CF7),
@@ -1388,7 +1407,14 @@ Terima kasih
           ),
         ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+        Text(
+          value,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.black,
+          ),
+        ),
       ],
     );
   }
@@ -1458,16 +1484,33 @@ Terima kasih
 
   Widget _miniStat(IconData icon, String label, String value) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, size: 18, color: Colors.grey),
+        Icon(icon, size: 20, color: const Color(0xFF4A6CF7)),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.black,
+          ),
+        ),
       ],
     );
   }
+
+
+
+
 }

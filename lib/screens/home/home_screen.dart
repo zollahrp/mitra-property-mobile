@@ -379,83 +379,27 @@ class _HomeScreenState extends State<HomeScreen> {
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
-  void _openFilterSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _openFilterSheet(BuildContext context) async {
+    final result = await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // TITLE
-              const Text(
-                "Filter Pencarian",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Filter 1
-              const Text("Tipe Listing"),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _filterChip("Dijual"),
-                  const SizedBox(width: 8),
-                  _filterChip("Disewa"),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // Filter 2
-              const Text("Jenis Properti"),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  _filterChip("Rumah"),
-                  _filterChip("Apt"),
-                  _filterChip("Ruko"),
-                  _filterChip("Tanah"),
-                ],
-              ),
-
-              const SizedBox(height: 30),
-
-              // APPLY BUTTON
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: const Color(0xFF4A6CF7),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    "Terapkan Filter",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (_) => const FilterModal(),
     );
+
+    if (result != null) {
+      if (result["reset"] == true) {
+        setState(() {
+          activeFilters = {};
+          properties = List.from(allProperties);
+        });
+      } else {
+        applyFilters(result);
+      }
+    }
   }
 
   Future<void> fetchVideos() async {
@@ -625,19 +569,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void filterProperties() {
     List<PropertyModel> filtered = List.from(allProperties);
 
-    // Filter Tipe Listing: Jual / Sewa
-    if (activeFilters["type"] != null) {
+    // Filter Tipe Listing: Dijual / Sewa (multi-select)
+    if (activeFilters["type"] != null && activeFilters["type"].isNotEmpty) {
+      final types = activeFilters["type"].split(",");
       filtered = filtered.where((p) {
         final listing = p.listingType?.toLowerCase() ?? "";
-        return listing.contains(activeFilters["type"].toLowerCase());
+        return types.any((t) => listing.contains(t.toLowerCase()));
       }).toList();
     }
 
-    // Filter Jenis Properti
-    if (activeFilters["propertyType"] != null) {
+    // Filter Jenis Properti (multi-select)
+    if (activeFilters["propertyType"] != null &&
+        activeFilters["propertyType"].isNotEmpty) {
+      final propertyTypes = activeFilters["propertyType"].split(",");
       filtered = filtered.where((p) {
         final type = p.propertyType?.toLowerCase() ?? "";
-        return type.contains(activeFilters["propertyType"].toLowerCase());
+        return propertyTypes.any((t) => type.contains(t.toLowerCase()));
       }).toList();
     }
 
@@ -670,17 +617,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       properties = allProperties.where((p) {
+        final nama = (p.nama ?? "").toLowerCase();
         final lokasi = (p.lokasi ?? "").toLowerCase();
-        final tipe = (p.propertyType ?? "").toLowerCase();
-        final jualsewa = (p.listingType ?? "").toLowerCase();
-        final harga = (p.harga ?? "").toLowerCase();
 
-        return lokasi.contains(query) ||
-            tipe.contains(query) ||
-            jualsewa.contains(query) ||
-            harga.contains(query);
+        // Cari berdasarkan nama ATAU lokasi (fallback)
+        return nama.contains(query) || lokasi.contains(query);
       }).toList();
     });
+    
+    debugPrint("Search query: $query, Found: ${properties.length} properties");
   }
 
   String shortenType(String type) {
@@ -709,7 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onRefresh: _onRefresh,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1185,7 +1130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSpacing: 12,
                           childAspectRatio:
                               MediaQuery.of(context).size.width /
-                              (MediaQuery.of(context).size.height * 0.85),
+                              (MediaQuery.of(context).size.height * 0.95),
                         ),
 
                         itemBuilder: (context, index) {
@@ -1313,10 +1258,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 6),
 
-                                          // TITLE (lokasi)
+                                          // NAME
                                           Text(
-                                            p.lokasi ?? "-",
-                                            maxLines: 1,
+                                            p.nama ?? "-",
+                                            maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontSize: 14,
@@ -1329,7 +1274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           // LOCATION
                                           Text(
                                             p.lokasi ?? "Lokasi tidak tersedia",
-                                            maxLines: 2,
+                                            maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontSize: 12,
@@ -1354,21 +1299,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _filterChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(label),
-    );
-  }
-
   Widget _buildPropertyList() {
     final recommended = getRecommendedProperties();
     return SizedBox(
-      height: 365,
+      height: 400,
       child: isLoading
           ? ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -1485,7 +1419,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         // ==== CONTENT ====
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1516,10 +1453,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 const SizedBox(height: 4),
 
-                                // TITLE (lokasi / nama)
+                                // NAME
                                 Text(
-                                  p.lokasi ?? "-",
-                                  maxLines: 1,
+                                  p.nama ?? "-",
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 14,
@@ -1532,7 +1469,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 // LOCATION
                                 Text(
                                   p.lokasi ?? "Lokasi tidak tersedia",
-                                  maxLines: 2,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 12,
@@ -1540,13 +1477,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
 
-                                const Spacer(),
+                                const SizedBox(height: 6),
+
+                                // DESCRIPTION
+                                Text(
+                                  p.deskripsi ?? "",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                    height: 1.3,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
 
                                 // ==== CALL + WHATSAPP BUTTONS ====
+                                
                                 Row(
-                                  children: [
+                                  children: [                                   
                                     // CALL BUTTON
-                                    Expanded(
+                                    Expanded(                                     
                                       child: GestureDetector(
                                         onTap: () async {
                                           final fixedPhone =
@@ -1563,7 +1515,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                           await launchUrl(url);
                                         },
                                         child: Container(
-                                          height: 42,
+                                          height: 38,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
                                               10,
@@ -1576,13 +1531,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: const Icon(
                                             Icons.phone,
                                             color: Color(0xFF4A6CF7),
-                                            size: 22,
+                                            size: 20,
                                           ),
                                         ),
                                       ),
                                     ),
 
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 8),
 
                                     // WHATSAPP BUTTON
                                     Expanded(
@@ -1636,7 +1591,10 @@ Terima kasih
                                           }
                                         },
                                         child: Container(
-                                          height: 42,
+                                          height: 38,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
                                               10,
@@ -1653,13 +1611,18 @@ Terima kasih
                                               Icon(
                                                 Icons.chat,
                                                 color: Colors.green,
+                                                size: 18,
                                               ),
                                               SizedBox(width: 6),
-                                              Text(
-                                                'Whatsapp',
-                                                style: TextStyle(
-                                                  color: Colors.green,
-                                                  fontWeight: FontWeight.w600,
+                                              Flexible(
+                                                child: Text(
+                                                  'Whatsapp',
+                                                  style: TextStyle(
+                                                    color: Colors.green,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],

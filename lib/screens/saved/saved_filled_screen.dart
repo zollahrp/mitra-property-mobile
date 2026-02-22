@@ -23,6 +23,22 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
   // bool _hasLoaded = false;
   TextEditingController searchCtrl = TextEditingController();
 
+  String shortenType(String type) {
+    switch (type.toLowerCase()) {
+      case "apartemen":
+      case "apartment":
+        return "Apt";
+      case "rumah":
+        return "Rumah";
+      case "ruko":
+        return "Ruko";
+      case "kost":
+        return "Kost";
+      default:
+        return type;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,12 +73,15 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
 
     setState(() {
       filteredProperties = savedProperties.where((p) {
-        return (p.lokasi ?? '').toLowerCase().contains(q) ||
-            (p.propertyType ?? '').toLowerCase().contains(q) ||
-            (p.listingType ?? '').toLowerCase().contains(q) ||
-            (p.harga ?? '').toLowerCase().contains(q);
+        final nama = (p.nama ?? '').toLowerCase();
+        final lokasi = (p.lokasi ?? '').toLowerCase();
+
+        // Cari berdasarkan nama ATAU lokasi (fallback)
+        return nama.contains(q) || lokasi.contains(q);
       }).toList();
     });
+    
+    debugPrint("Search query: $q, Found: ${filteredProperties.length} properties");
   }
 
   @override
@@ -144,7 +163,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
-                              childAspectRatio: 0.64,
+                              childAspectRatio: 0.85,
                             ),
                         itemBuilder: (_, __) {
                           return Shimmer.fromColors(
@@ -254,7 +273,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
                                 crossAxisCount: 2,
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
-                                childAspectRatio: 0.64,
+                                childAspectRatio: 0.58,
                               ),
                           itemBuilder: (context, index) {
                             return _buildSavedCard(filteredProperties[index]);
@@ -290,8 +309,8 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.07),
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
@@ -299,7 +318,7 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==== IMAGE ====
+            // ==== IMAGE + BOOKMARK ====
             Stack(
               children: [
                 ClipRRect(
@@ -367,56 +386,66 @@ class SavedFilledScreenState extends State<SavedFilledScreen> {
             ),
 
             // ==== CONTENT ====
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // TAGS
-                  Row(
-                    children: [
-                      _buildTagGrey(getListingLabel(p.listingType)),
-                      const SizedBox(width: 6),
-                      _buildTagBlue(p.propertyType),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // PRICE
-                  Text(
-                    hargaFormat,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF4A6CF7),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  12,
+                  10,
+                  12,
+                  12,
+                ),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    // TAGS
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _buildTagGrey(getListingLabel(p.listingType)),
+                        _buildTagBlue(shortenType(p.propertyType ?? "")),
+                      ],
                     ),
-                  ),
 
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 8),
 
-                  // TITLE
-                  Text(
-                    p.nama,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.25,
+                    // PRICE
+                    Text(
+                      hargaFormat,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4A6CF7),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 6),
 
-                  const SizedBox(height: 6),
+                    // NAME
+                    Text(
+                      p.nama ?? "-",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
 
-                  // LOCATION
-                  Text(
-                    p.lokasi,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+
+                    // LOCATION
+                    Text(
+                      p.lokasi ?? "Lokasi tidak tersedia",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

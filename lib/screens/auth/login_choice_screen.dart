@@ -71,7 +71,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
             ),
           ),
 
-          const SizedBox(height: 36),
+          const SizedBox(height: 28),
 
           // ===== CONTENT =====
           Padding(
@@ -88,7 +88,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Login atau daftar untuk mendapatkan\npengalaman terbaik dalam pencarian properti.',
+                  'Login atau daftar untuk mendapatkan pengalaman terbaik dalam pencarian properti.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14.5,
@@ -97,7 +97,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 36),
+                const SizedBox(height: 28),
 
                 // ===== LOGIN BUTTON =====
                 SizedBox(
@@ -134,7 +134,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
 
                 // ===== DIVIDER =====
                 Row(
@@ -156,7 +156,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
 
                 // ===== REGISTER BUTTON =====
                 SizedBox(
@@ -195,7 +195,7 @@ class _LoginChoiceScreenState extends State<LoginChoiceScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 28),
 
                 const Text(
                   '© 2025 • Semua Hak Dilindungi Mitra Property',

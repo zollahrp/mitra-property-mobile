@@ -13,26 +13,26 @@ class _FAQScreenState extends State<FAQScreen> {
 
   final List<Map<String, String>> faqs = [
     {
-      "q": "Apa itu aplikasi Mitra Property?",
+      "q": "Apa itu aplikasi My Home?",
       "a":
-          "Mitra Property adalah aplikasi web dan mobile yang digunakan untuk jual, beli, dan sewa properti seperti rumah, apartemen, dan tanah. Aplikasi ini bisa digunakan oleh agen properti maupun masyarakat umum yang ingin mencari atau memasarkan properti dengan lebih mudah.",
+          "My Home adalah aplikasi web dan mobile yang digunakan untuk jual, beli, dan sewa properti seperti rumah, apartemen, dan tanah. Aplikasi ini bisa digunakan oleh agen properti maupun masyarakat umum yang ingin mencari atau memasarkan properti dengan lebih mudah.",
     },
     {
       "q":
-          "Apakah masyarakat umum bisa menjual atau menyewakan properti di Mitra Property?",
+          "Apakah masyarakat umum bisa menjual atau menyewakan properti di My Home?",
       "a":
-          "Ya, bisa. Mitra Property terbuka untuk semua orang. Pengguna umum dapat langsung memasang iklan properti mereka sendiri tanpa harus menjadi agen atau mitra resmi.",
+          "Ya, bisa. My Home terbuka untuk semua orang. Pengguna umum dapat langsung memasang iklan properti mereka sendiri tanpa harus menjadi agen atau mitra resmi.",
     },
     {
-      "q": "Jenis properti apa saja yang bisa dipasang di Mitra Property?",
+      "q": "Jenis properti apa saja yang bisa dipasang di My Home?",
       "a":
-          "Berbagai jenis properti dapat dipasang di Mitra Property, seperti rumah, apartemen, tanah, maupun properti komersial lainnya, baik untuk dijual maupun disewakan.",
+          "Berbagai jenis properti dapat dipasang di My Home, seperti rumah, apartemen, tanah, maupun properti komersial lainnya, baik untuk dijual maupun disewakan.",
     },
     {
       "q":
-          "Apakah Mitra Property hanya untuk jual beli atau juga melayani sewa?",
+          "Apakah My Home hanya untuk jual beli atau juga melayani sewa?",
       "a":
-          "Mitra Property melayani dua-duanya, yaitu jual dan sewa properti. Pengguna dapat dengan mudah mencari properti sesuai kebutuhan melalui fitur pencarian dan filter yang tersedia.",
+          "My Home melayani dua-duanya, yaitu jual dan sewa properti. Pengguna dapat dengan mudah mencari properti sesuai kebutuhan melalui fitur pencarian dan filter yang tersedia.",
     },
     {
       "q": "Bagaimana cara menghubungi pemilik atau penjual properti?",

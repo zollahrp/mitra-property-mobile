@@ -10,25 +10,24 @@ class FilterModal extends StatefulWidget {
 
 class _FilterModalState extends State<FilterModal> {
   // ==== STATE ====
-  String selectedSort = "Harga Terendah";
-  String selectedType = "Disewa";
-  String selectedApproval = "Kavling";
+  String selectedSort = "";
+  List<String> selectedTypes = [];
+  List<String> selectedApprovals = [];
   final TextEditingController uploaderCtrl = TextEditingController();
   // SATUAN LUAS (meter/are/hektare)
-  String selectedUnit = "meter";
+  String selectedUnit = "";
 
   // KAMAR TIDUR
-  String selectedBedroom = "1 Kamar";
+  List<String> selectedBedrooms = [];
 
   // KONDISI
-  String selectedCondition = "Furnished";
+  List<String> selectedConditions = [];
 
   // SERTIFIKAT
-  String selectedCertificate = "SHM";
+  List<String> selectedCertificates = [];
 
   // ==== LIST OPTIONS ====
   final List<String> sortOptions = [
-    "Rekomendasi",
     "Harga Terendah",
     "Harga Tertinggi",
     "Terbaru",
@@ -47,17 +46,17 @@ class _FilterModalState extends State<FilterModal> {
 
   final List<String> types = ["Dijual", "Disewa"];
 
-  final List<String> approvals = ["Rumah", "Apartemen", "Kavling"];
+  final List<String> approvals = ["Rumah", "Apartemen", "Ruko", "Tanah"];
 
   void resetAll() {
-    selectedSort = "Harga Terendah";
-    selectedType = "Disewa";
-    selectedApproval = "Kavling";
+    selectedSort = "";
+    selectedTypes = [];
+    selectedApprovals = [];
 
-    selectedUnit = "meter";
-    selectedBedroom = "1 Kamar";
-    selectedCondition = "Furnished";
-    selectedCertificate = "SHM";
+    selectedUnit = "";
+    selectedBedrooms = [];
+    selectedConditions = [];
+    selectedCertificates = [];
 
     uploaderCtrl.clear();
     landMinCtrl.clear();
@@ -66,6 +65,56 @@ class _FilterModalState extends State<FilterModal> {
     buildingMaxCtrl.clear();
 
     setState(() {});
+  }
+
+  void _toggleType(String item) {
+    setState(() {
+      if (selectedTypes.contains(item)) {
+        selectedTypes.remove(item);
+      } else {
+        selectedTypes.add(item);
+      }
+    });
+  }
+
+  void _toggleApproval(String item) {
+    setState(() {
+      if (selectedApprovals.contains(item)) {
+        selectedApprovals.remove(item);
+      } else {
+        selectedApprovals.add(item);
+      }
+    });
+  }
+
+  void _toggleBedroom(String item) {
+    setState(() {
+      if (selectedBedrooms.contains(item)) {
+        selectedBedrooms.remove(item);
+      } else {
+        selectedBedrooms.add(item);
+      }
+    });
+  }
+
+  void _toggleCondition(String item) {
+    setState(() {
+      if (selectedConditions.contains(item)) {
+        selectedConditions.remove(item);
+      } else {
+        selectedConditions.add(item);
+      }
+    });
+  }
+
+  void _toggleCertificate(String item) {
+    setState(() {
+      if (selectedCertificates.contains(item)) {
+        selectedCertificates.remove(item);
+      } else {
+        selectedCertificates.add(item);
+      }
+    });
   }
 
   @override
@@ -164,13 +213,13 @@ class _FilterModalState extends State<FilterModal> {
 
               Row(
                 children: types.map((item) {
-                  bool active = selectedType == item;
+                  bool active = selectedTypes.contains(item);
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
                     child: _filterChip(
                       text: item,
                       active: active,
-                      onTap: () => setState(() => selectedType = item),
+                      onTap: () => _toggleType(item),
                     ),
                   );
                 }).toList(),
@@ -180,21 +229,20 @@ class _FilterModalState extends State<FilterModal> {
 
               // ==== PERSETUJUAN ====
               const Text(
-                "Persetujuan",
+                "Jenis Properti",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
 
-              Row(
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
                 children: approvals.map((item) {
-                  bool active = selectedApproval == item;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: _filterChip(
-                      text: item,
-                      active: active,
-                      onTap: () => setState(() => selectedApproval = item),
-                    ),
+                  bool active = selectedApprovals.contains(item);
+                  return _filterChip(
+                    text: item,
+                    active: active,
+                    onTap: () => _toggleApproval(item),
                   );
                 }).toList(),
               ),
@@ -286,7 +334,7 @@ class _FilterModalState extends State<FilterModal> {
               ),
               const SizedBox(height: 8),
               const Text(
-                "Minimal",
+                "Pilih minimal kamar tidur",
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 10),
@@ -294,14 +342,12 @@ class _FilterModalState extends State<FilterModal> {
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: ["1 Kamar", "2 Kamar", "3 Kamar", "4 Kamar"].map((
-                  item,
-                ) {
-                  bool active = selectedBedroom == item;
+                children: ["1", "2", "3", "4", "5+"].map((item) {
+                  bool active = selectedBedrooms.contains(item);
                   return _filterChip(
-                    text: item,
+                    text: "$item Kamar",
                     active: active,
-                    onTap: () => setState(() => selectedBedroom = item),
+                    onTap: () => _toggleBedroom(item),
                   );
                 }).toList(),
               ),
@@ -317,14 +363,14 @@ class _FilterModalState extends State<FilterModal> {
 
               Wrap(
                 spacing: 10,
-                children: ["Furnished", "Semi Furnish", "Unfurnish"].map((
+                children: ["Furnished", "Semi Furnish", "Unfurnished"].map((
                   item,
                 ) {
-                  bool active = selectedCondition == item;
+                  bool active = selectedConditions.contains(item);
                   return _filterChip(
                     text: item,
                     active: active,
-                    onTap: () => setState(() => selectedCondition = item),
+                    onTap: () => _toggleCondition(item),
                   );
                 }).toList(),
               ),
@@ -341,11 +387,11 @@ class _FilterModalState extends State<FilterModal> {
               Wrap(
                 spacing: 10,
                 children: ["SHM", "SHGB", "PPJB"].map((item) {
-                  bool active = selectedCertificate == item;
+                  bool active = selectedCertificates.contains(item);
                   return _filterChip(
                     text: item,
                     active: active,
-                    onTap: () => setState(() => selectedCertificate = item),
+                    onTap: () => _toggleCertificate(item),
                   );
                 }).toList(),
               ),
@@ -377,28 +423,6 @@ class _FilterModalState extends State<FilterModal> {
                         resetAll();
 
                         Navigator.pop(context, {
-                          "sort": selectedSort,
-                          "type": selectedType,
-                          "approval": selectedApproval,
-                          "uploader": uploaderCtrl.text.isEmpty
-                              ? null
-                              : uploaderCtrl.text,
-                          "unit": selectedUnit,
-                          "bedroom": selectedBedroom,
-                          "condition": selectedCondition,
-                          "certificate": selectedCertificate,
-                          "landMin": landMinCtrl.text.isEmpty
-                              ? null
-                              : landMinCtrl.text,
-                          "landMax": landMaxCtrl.text.isEmpty
-                              ? null
-                              : landMaxCtrl.text,
-                          "buildingMin": buildingMinCtrl.text.isEmpty
-                              ? null
-                              : buildingMinCtrl.text,
-                          "buildingMax": buildingMaxCtrl.text.isEmpty
-                              ? null
-                              : buildingMaxCtrl.text,
                           "reset": true,
                         });
                       },
@@ -427,18 +451,38 @@ class _FilterModalState extends State<FilterModal> {
                       ),
                       onPressed: () {
                         Navigator.pop(context, {
-                          "sort": selectedSort,
-                          "type": selectedType,
-                          "approval": selectedApproval,
-                          "uploader": uploaderCtrl.text,
-                          "unit": selectedUnit,
-                          "bedroom": selectedBedroom,
-                          "condition": selectedCondition,
-                          "certificate": selectedCertificate,
-                          "landMin": landMinCtrl.text,
-                          "landMax": landMaxCtrl.text,
-                          "buildingMin": buildingMinCtrl.text,
-                          "buildingMax": buildingMaxCtrl.text,
+                          "sort": selectedSort.isEmpty ? null : selectedSort,
+                          "type": selectedTypes.isEmpty
+                              ? null
+                              : selectedTypes.join(","),
+                          "propertyType": selectedApprovals.isEmpty
+                              ? null
+                              : selectedApprovals.join(","),
+                          "uploader": uploaderCtrl.text.isEmpty
+                              ? null
+                              : uploaderCtrl.text,
+                          "unit": selectedUnit.isEmpty ? null : selectedUnit,
+                          "bedroom": selectedBedrooms.isEmpty
+                              ? null
+                              : selectedBedrooms.join(","),
+                          "condition": selectedConditions.isEmpty
+                              ? null
+                              : selectedConditions.join(","),
+                          "certificate": selectedCertificates.isEmpty
+                              ? null
+                              : selectedCertificates.join(","),
+                          "landMin": landMinCtrl.text.isEmpty
+                              ? null
+                              : landMinCtrl.text,
+                          "landMax": landMaxCtrl.text.isEmpty
+                              ? null
+                              : landMaxCtrl.text,
+                          "buildingMin": buildingMinCtrl.text.isEmpty
+                              ? null
+                              : buildingMinCtrl.text,
+                          "buildingMax": buildingMaxCtrl.text.isEmpty
+                              ? null
+                              : buildingMaxCtrl.text,
                         });
                       },
 
