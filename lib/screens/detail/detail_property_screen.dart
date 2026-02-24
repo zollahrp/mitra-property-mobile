@@ -436,9 +436,17 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
         return "Ruko";
       case "kost":
         return "Kost";
+      case "kavling":
+      case "tanah":
+        return "Kavling";
       default:
         return type; // fallback biar aman
     }
+  }
+
+  String formatPropertyType(String type) {
+    // Replace underscore dengan space, contoh: "ready_kunci" → "ready kunci"
+    return type.replaceAll("_", " ");
   }
 
   @override
@@ -705,7 +713,7 @@ class _DetailPropertyScreenState extends State<DetailPropertyScreen> {
                                                 getListingLabel(p.listingType),
                                               ),
                                               _buildTagBlue(
-                                                shortenType(
+                                                formatPropertyType(
                                                   p.propertyType ?? "",
                                                 ),
                                               ),
@@ -1052,7 +1060,7 @@ Terima kasih
           // ===== TAGS =====
           Row(
             children: [
-              _tagGrey(property.propertyType), // contoh: Rumah, Apartemen
+              _tagGrey(formatPropertyType(property.propertyType)), // contoh: Rumah, Apartemen, ready kunci
               const SizedBox(width: 10),
               _tagBlue(property.listingType), // contoh: Disewa, Dijual
             ],

@@ -394,10 +394,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (result["reset"] == true) {
         setState(() {
           activeFilters = {};
-          properties = List.from(allProperties);
+          isLoading = true;
         });
+        await loadProperties();
       } else {
-        applyFilters(result);
+        await applyFilters(result);
       }
     }
   }
@@ -518,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final result = await PropertyService.getApprovedProperties();
       setState(() {
-        allProperties = result; // Data mentah
+        allProperties = result; // Data mentah untuk fallback
         properties = List.from(allProperties); // Data yang akan difilter
         isLoading = false;
       });
@@ -558,42 +559,265 @@ class _HomeScreenState extends State<HomeScreen> {
   //   return sorted.take(10).toList();
   // }
 
-  void applyFilters(Map<String, dynamic> data) {
+  Future<void> applyFilters(Map<String, dynamic> data) async {
     setState(() {
       activeFilters = data;
+      isLoading = true;
     });
 
-    filterProperties();
+    await filterProperties();
   }
 
-  void filterProperties() {
-    List<PropertyModel> filtered = List.from(allProperties);
+  Future<void> filterProperties() async {
+    try {
+      // Ambil semua approved properties sebagai dasar filtering
+      List<PropertyModel> filtered = await PropertyService.getApprovedProperties();
 
-    // Filter Tipe Listing: Dijual / Sewa (multi-select)
-    if (activeFilters["type"] != null && activeFilters["type"].isNotEmpty) {
-      final types = activeFilters["type"].split(",");
-      filtered = filtered.where((p) {
-        final listing = p.listingType?.toLowerCase() ?? "";
-        return types.any((t) => listing.contains(t.toLowerCase()));
-      }).toList();
+      print("📊 TOTAL PROPERTIES: ${filtered.length}");
+      
+      // DEBUG: Print sample data untuk cek field furnish dan listing_type
+      if (filtered.isNotEmpty) {
+        print("🔍 SAMPLE DATA (3 pertama):");
+        for (var i = 0; i < filtered.length && i < 3; i++) {
+          print("   [${i}] ${filtered[i].nama}");
+          print("       - listing_type: '${filtered[i].listingType}'");
+          print("       - furnish: '${filtered[i].furnish}'");
+          print("       - property_type: '${filtered[i].propertyType}'");
+        }
+      }
+
+      // ============================================
+      // FILTER BERDASARKAN FIELD PROPERTY (Manual Filter)
+      // ============================================
+
+      // 1. FILTER BY PROPERTY TYPE (Rumah, Apartemen, Kavling)
+      if (activeFilters["propertyType"] != null &&
+          activeFilters["propertyType"].isNotEmpty) {
+        final propertyType = activeFilters["propertyType"].toLowerCase();
+        print("🏷️ Filter Property Type: $propertyType");
+        filtered = filtered
+            .where((p) {
+              final type = p.propertyType.toLowerCase();
+              print("   - ${p.nama}: type='$type', match=${type.contains(propertyType)}");
+              return type.contains(propertyType);
+            })
+            .toList();
+        print("✅ After Property Type filter: ${filtered.length}");
+      }
+
+      // 2. FILTER BY LISTING TYPE (Dijual/Disewa)
+      if (activeFilters["type"] != null &&
+          activeFilters["type"].isNotEmpty) {
+        final selectedTypes = activeFilters["type"].toLowerCase().split(",").map((e) => e.trim()).toList();
+        print("🏷️ Filter Listing Type: $selectedTypes");
+
+        filtered = filtered
+            .where((p) {
+              final listingType = p.listingType.toLowerCase();
+
+              // Database menggunakan: 'beli' dan 'sewa'
+              bool match = false;
+
+              for (var type in selectedTypes) {
+                if (type == "dijual") {
+                  if (listingType == "beli") {
+                    match = true;
+                    break;
+                  }
+                } else if (type == "disewa") {
+                  if (listingType == "sewa") {
+                    match = true;
+                    break;
+                  }
+                }
+              }
+
+              print("   - ${p.nama}: listingType='$listingType', match=$match");
+              return match;
+            })
+            .toList();
+        print("✅ After Listing Type filter: ${filtered.length}");
+      }
+
+      // 3. FILTER BY FURNISH CONDITION (Furnished, Semi Furnished, Unfurnished)
+      if (activeFilters["condition"] != null &&
+          activeFilters["condition"].isNotEmpty) {
+        final selectedConditions = activeFilters["condition"].toLowerCase().split(",").map((e) => e.trim()).toList();
+        print("🏠 Filter Condition: $selectedConditions");
+
+        filtered = filtered
+            .where((p) {
+              final furnish = p.furnish.toLowerCase().trim();
+              print("   DEBUG: checking property '${p.nama}' - furnish raw='${p.furnish}', furnish processed='$furnish'");
+
+              // Database menggunakan: 'furnish', 'semi_furnish', 'unfurnish'
+              // UI mengirim: 'Furnished', 'Semi Furnish', 'Unfurnished'
+              bool match = false;
+
+              for (var condition in selectedConditions) {
+                print("      - checking condition='$condition' vs furnish='$furnish'");
+                // 'furnished' -> match dengan 'furnish'
+                if (condition == "furnished") {
+                  if (furnish == "furnish") {
+                    match = true;
+                    print("      - MATCH! furnished == furnish");
+                    break;
+                  }
+                } 
+                // 'semi furnish' -> match dengan 'semi_furnish' atau 'semi furnish'
+                else if (condition == "semi furnish") {
+                  if (furnish == "semi_furnish" || furnish == "semi furnish" || furnish.contains("semi")) {
+                    match = true;
+                    print("      - MATCH! semi furnish");
+                    break;
+                  }
+                } 
+                // 'unfurnished' -> match dengan 'unfurnish'
+                else if (condition == "unfurnished") {
+                  if (furnish == "unfurnish") {
+                    match = true;
+                    print("      - MATCH! unfurnished == unfurnish");
+                    break;
+                  }
+                }
+              }
+
+              print("   - ${p.nama}: furnish='$furnish', match=$match");
+              return match;
+            })
+            .toList();
+        print("✅ After Condition filter: ${filtered.length}");
+      }
+
+      // 4. FILTER BY CERTIFICATE (SHM, SHGB, PPJB)
+      if (activeFilters["certificate"] != null &&
+          activeFilters["certificate"].isNotEmpty) {
+        final certificates = activeFilters["certificate"].toUpperCase();
+        print("📜 Filter Certificate: $certificates");
+        filtered = filtered
+            .where((p) {
+              final cert = p.sertifikat.toUpperCase();
+              bool match = false;
+              if (certificates.contains("SHM") && !certificates.contains("SHGB") && !certificates.contains("PPJB")) {
+                match = cert.contains("SHM") || cert.contains("HAK MILIK");
+              } else if (certificates.contains("SHGB")) {
+                match = cert.contains("SHGB") || cert.contains("HAK GUNA BANGUNAN");
+              } else if (certificates.contains("PPJB")) {
+                match = cert.contains("PPJB");
+              }
+              print("   - ${p.nama}: cert='$cert', match=$match");
+              return match;
+            })
+            .toList();
+        print("✅ After Certificate filter: ${filtered.length}");
+      }
+
+      // 5. FILTER BY SORTING
+      if (activeFilters["sort"] != null && activeFilters["sort"].isNotEmpty) {
+        final sort = activeFilters["sort"].toLowerCase();
+        print("📊 Sorting: $sort");
+
+        if (sort.contains("harga terendah")) {
+          filtered.sort((a, b) {
+            final priceA = double.tryParse(a.harga.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+            final priceB = double.tryParse(b.harga.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+            return priceA.compareTo(priceB);
+          });
+        } else if (sort.contains("harga tertinggi")) {
+          filtered.sort((a, b) {
+            final priceA = double.tryParse(a.harga.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+            final priceB = double.tryParse(b.harga.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+            return priceB.compareTo(priceA);
+          });
+        }
+        print("✅ After Sorting: ${filtered.length}");
+      }
+
+      // ============================================
+      // FILTER MANUAL (untuk kriteria yang tidak ada endpoint API)
+      // ============================================
+
+      // Filter by Luas Tanah Min
+      if (activeFilters["landMin"] != null &&
+          activeFilters["landMin"].isNotEmpty) {
+        final minLand = double.tryParse(activeFilters["landMin"]) ?? 0;
+        filtered = filtered
+            .where((p) {
+              final land = double.tryParse(p.luasTanah) ?? 0;
+              return land >= minLand;
+            })
+            .toList();
+      }
+
+      // Filter by Luas Tanah Max
+      if (activeFilters["landMax"] != null &&
+          activeFilters["landMax"].isNotEmpty) {
+        final maxLand = double.tryParse(activeFilters["landMax"]) ?? 0;
+        filtered = filtered
+            .where((p) {
+              final land = double.tryParse(p.luasTanah) ?? 0;
+              return land <= maxLand;
+            })
+            .toList();
+      }
+
+      // Filter by Luas Bangunan Min
+      if (activeFilters["buildingMin"] != null &&
+          activeFilters["buildingMin"].isNotEmpty) {
+        final minBuild = double.tryParse(activeFilters["buildingMin"]) ?? 0;
+        filtered = filtered
+            .where((p) {
+              final build = double.tryParse(p.luasBangunan) ?? 0;
+              return build >= minBuild;
+            })
+            .toList();
+      }
+
+      // Filter by Luas Bangunan Max
+      if (activeFilters["buildingMax"] != null &&
+          activeFilters["buildingMax"].isNotEmpty) {
+        final maxBuild = double.tryParse(activeFilters["buildingMax"]) ?? 0;
+        filtered = filtered
+            .where((p) {
+              final build = double.tryParse(p.luasBangunan) ?? 0;
+              return build <= maxBuild;
+            })
+            .toList();
+      }
+
+      // Filter by Kamar Tidur
+      if (activeFilters["bedroom"] != null &&
+          activeFilters["bedroom"].isNotEmpty) {
+        final bedrooms = activeFilters["bedroom"] as String;
+        filtered = filtered
+            .where((p) {
+              for (var bed in bedrooms.split(",")) {
+                final bedNum = int.tryParse(bed.trim());
+                if (bedNum != null && p.kamarTidur >= bedNum) {
+                  return true;
+                }
+                if (bed.trim() == "5+" && p.kamarTidur >= 5) {
+                  return true;
+                }
+              }
+              return false;
+            })
+            .toList();
+      }
+
+      print("🎉 FINAL RESULT: ${filtered.length} properties");
+
+      setState(() {
+        properties = filtered;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("❌ Error filtering properties: $e");
+      setState(() async {
+        isLoading = false;
+        properties = await PropertyService.getApprovedProperties();
+      });
     }
-
-    // Filter Jenis Properti (multi-select)
-    if (activeFilters["propertyType"] != null &&
-        activeFilters["propertyType"].isNotEmpty) {
-      final propertyTypes = activeFilters["propertyType"].split(",");
-      filtered = filtered.where((p) {
-        final type = p.propertyType?.toLowerCase() ?? "";
-        return propertyTypes.any((t) => type.contains(t.toLowerCase()));
-      }).toList();
-    }
-
-    // Tambahkan filter lainnya nanti
-    // uploader, sertifikat, luas tanah, sorting, kamar tidur, dsb
-
-    setState(() {
-      properties = filtered;
-    });
   }
 
   String fixYoutubeUrl(String url) {
@@ -635,6 +859,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return "Apt";
       case "rumah":
         return "Rumah";
+      case "kavling":
+      case "tanah":
+        return "Kavling";
       case "ruko":
         return "Ruko";
       case "kost":
@@ -774,19 +1001,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                     top: Radius.circular(24),
                                   ),
                                 ),
-                                builder: (_) => const FilterModal(),
+                                builder: (_) => FilterModal(
+                                  initialFilters: activeFilters.isEmpty ? null : activeFilters,
+                                ),
                               );
 
                               if (result != null) {
                                 if (result["reset"] == true) {
                                   setState(() {
-                                    activeFilters = {}; // kosongkan filter
-                                    properties = List.from(
-                                      allProperties,
-                                    ); // tampilkan semua data
+                                    activeFilters = {};
+                                    isLoading = true;
                                   });
+                                  await loadProperties();
                                 } else {
-                                  applyFilters(result);
+                                  await applyFilters(result);
                                 }
                               }
                             },

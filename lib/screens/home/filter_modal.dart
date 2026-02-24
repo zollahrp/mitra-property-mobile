@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mitra_property/models/property_model.dart';
 
 class FilterModal extends StatefulWidget {
-  const FilterModal({super.key});
+  final Map<String, dynamic>? initialFilters;
+
+  const FilterModal({super.key, this.initialFilters});
 
   @override
   State<FilterModal> createState() => _FilterModalState();
@@ -13,9 +15,8 @@ class _FilterModalState extends State<FilterModal> {
   String selectedSort = "";
   List<String> selectedTypes = [];
   List<String> selectedApprovals = [];
-  final TextEditingController uploaderCtrl = TextEditingController();
-  // SATUAN LUAS (meter/are/hektare)
-  String selectedUnit = "";
+  // SATUAN LUAS (meter/are/hektare) - DIHAPUS
+  // String selectedUnit = "";
 
   // KAMAR TIDUR
   List<String> selectedBedrooms = [];
@@ -30,15 +31,10 @@ class _FilterModalState extends State<FilterModal> {
   final List<String> sortOptions = [
     "Harga Terendah",
     "Harga Tertinggi",
-    "Terbaru",
-    "Luas Tanah Terluas",
-    "Luas Bangunan Terluas",
   ];
 
   final TextEditingController landMinCtrl = TextEditingController();
   final TextEditingController landMaxCtrl = TextEditingController();
-  final TextEditingController buildMinCtrl = TextEditingController();
-  final TextEditingController buildMaxCtrl = TextEditingController();
 
   // Tambahan controller luas bangunan & tanah
   final TextEditingController buildingMinCtrl = TextEditingController();
@@ -46,25 +42,69 @@ class _FilterModalState extends State<FilterModal> {
 
   final List<String> types = ["Dijual", "Disewa"];
 
-  final List<String> approvals = ["Rumah", "Apartemen", "Ruko", "Tanah"];
+  final List<String> approvals = ["Rumah", "Apartemen", "Kavling"];
 
-  void resetAll() {
-    selectedSort = "";
-    selectedTypes = [];
-    selectedApprovals = [];
+  @override
+  void initState() {
+    super.initState();
+    // Load initial filters jika ada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialFilters();
+    });
+  }
 
-    selectedUnit = "";
-    selectedBedrooms = [];
-    selectedConditions = [];
-    selectedCertificates = [];
+  void _loadInitialFilters() {
+    if (widget.initialFilters == null) return;
 
-    uploaderCtrl.clear();
-    landMinCtrl.clear();
-    landMaxCtrl.clear();
-    buildingMinCtrl.clear();
-    buildingMaxCtrl.clear();
+    final filters = widget.initialFilters!;
 
-    setState(() {});
+    setState(() {
+      // Load sort
+      if (filters["sort"] != null && filters["sort"].isNotEmpty) {
+        selectedSort = filters["sort"];
+      }
+
+      // Load types (Dijual/Disewa)
+      if (filters["type"] != null && filters["type"].isNotEmpty) {
+        selectedTypes = (filters["type"] as String).split(",").map((e) => e.trim()).toList();
+      }
+
+      // Load property types (Rumah/Apartemen/Kavling)
+      if (filters["propertyType"] != null && filters["propertyType"].isNotEmpty) {
+        selectedApprovals = (filters["propertyType"] as String).split(",").map((e) => e.trim()).toList();
+      }
+
+      // Load bedrooms
+      if (filters["bedroom"] != null && filters["bedroom"].isNotEmpty) {
+        selectedBedrooms = (filters["bedroom"] as String).split(",").map((e) => e.trim()).toList();
+      }
+
+      // Load conditions (Furnished/Semi/Unfurnished)
+      if (filters["condition"] != null && filters["condition"].isNotEmpty) {
+        selectedConditions = (filters["condition"] as String).split(",").map((e) => e.trim()).toList();
+      }
+
+      // Load certificates
+      if (filters["certificate"] != null && filters["certificate"].isNotEmpty) {
+        selectedCertificates = (filters["certificate"] as String).split(",").map((e) => e.trim()).toList();
+      }
+
+      // Load land area
+      if (filters["landMin"] != null && filters["landMin"].isNotEmpty) {
+        landMinCtrl.text = filters["landMin"];
+      }
+      if (filters["landMax"] != null && filters["landMax"].isNotEmpty) {
+        landMaxCtrl.text = filters["landMax"];
+      }
+
+      // Load building area
+      if (filters["buildingMin"] != null && filters["buildingMin"].isNotEmpty) {
+        buildingMinCtrl.text = filters["buildingMin"];
+      }
+      if (filters["buildingMax"] != null && filters["buildingMax"].isNotEmpty) {
+        buildingMaxCtrl.text = filters["buildingMax"];
+      }
+    });
   }
 
   void _toggleType(String item) {
@@ -74,6 +114,22 @@ class _FilterModalState extends State<FilterModal> {
       } else {
         selectedTypes.add(item);
       }
+    });
+  }
+
+  void resetAll() {
+    setState(() {
+      selectedSort = "";
+      selectedTypes = [];
+      selectedApprovals = [];
+      selectedBedrooms = [];
+      selectedConditions = [];
+      selectedCertificates = [];
+
+      landMinCtrl.clear();
+      landMaxCtrl.clear();
+      buildingMinCtrl.clear();
+      buildingMaxCtrl.clear();
     });
   }
 
@@ -249,50 +305,6 @@ class _FilterModalState extends State<FilterModal> {
 
               const SizedBox(height: 22),
 
-              // ==== NAMA PENUNGGAH ====
-              const Text(
-                "Nama Penungggah",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: uploaderCtrl,
-                decoration: InputDecoration(
-                  hintText: "Ketik disini",
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              // Satuan Luas
-              const Text(
-                "Satuan Luas",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-
-              Wrap(
-                spacing: 10,
-                children: ["meter", "are", "Hektare"].map((item) {
-                  bool active = selectedUnit == item;
-                  return _filterChip(
-                    text: item,
-                    active: active,
-                    onTap: () => setState(() => selectedUnit = item),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 22),
-
               // LUAS TANAH
               const Text(
                 "Luas Tanah",
@@ -361,16 +373,35 @@ class _FilterModalState extends State<FilterModal> {
               ),
               const SizedBox(height: 12),
 
-              Wrap(
-                spacing: 10,
-                children: ["Furnished", "Semi Furnish", "Unfurnished"].map((
-                  item,
-                ) {
+              // Baris 1: Furnished & Semi Furnish
+              Row(
+                children: ["Furnished", "Semi Furnish"].map((item) {
                   bool active = selectedConditions.contains(item);
-                  return _filterChip(
-                    text: item,
-                    active: active,
-                    onTap: () => _toggleCondition(item),
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: _filterChip(
+                        text: item,
+                        active: active,
+                        onTap: () => _toggleCondition(item),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Baris 2: Unfurnished
+              Row(
+                children: ["Unfurnished"].map((item) {
+                  bool active = selectedConditions.contains(item);
+                  return Expanded(
+                    child: _filterChip(
+                      text: item,
+                      active: active,
+                      onTap: () => _toggleCondition(item),
+                    ),
                   );
                 }).toList(),
               ),
@@ -458,10 +489,6 @@ class _FilterModalState extends State<FilterModal> {
                           "propertyType": selectedApprovals.isEmpty
                               ? null
                               : selectedApprovals.join(","),
-                          "uploader": uploaderCtrl.text.isEmpty
-                              ? null
-                              : uploaderCtrl.text,
-                          "unit": selectedUnit.isEmpty ? null : selectedUnit,
                           "bedroom": selectedBedrooms.isEmpty
                               ? null
                               : selectedBedrooms.join(","),
